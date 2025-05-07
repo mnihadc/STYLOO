@@ -13,6 +13,7 @@ import HelpCenter from "./Pages/HelpCenter";
 import SettingsPage from "./Pages/Settings";
 import UserSearch from "./Components/SearchUser";
 import ProductView from "./Components/ProductView";
+import SignupPage from "./Pages/SignUp";
 function App() {
   return (
     <BrowserRouter>
@@ -31,6 +32,7 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/user-search" element={<UserSearch />} />
           <Route path="/product-view" element={<ProductView />} />
+          <Route path="/signup" element={<SignupPage />} />
         </Routes>
       </div>
       <BottomHeader />
