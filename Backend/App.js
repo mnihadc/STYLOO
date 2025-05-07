@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import path from "path";
 import mongoose from "mongoose";
-import authRoutes from "./Route/auth.route"; // ⬅️ Import the auth routes
+import authRoutes from "./Route/auth.route.js"; // ⬅️ Import the auth routes
 
 dotenv.config();
 const __dirname = path.resolve();

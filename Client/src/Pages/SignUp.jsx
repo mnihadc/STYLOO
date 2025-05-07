@@ -7,16 +7,20 @@ import {
   FaGoogle,
   FaFacebook,
 } from "react-icons/fa";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom"; // Added for navigation
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
-    phone: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [termsAccepted, setTermsAccepted] = useState(false); // Added state for checkbox
+  const navigate = useNavigate(); // Added for navigation
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,10 +30,31 @@ const SignupPage = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validation logic would go here
-    console.log("Form submitted:", formData);
+
+    // Check if terms are accepted
+    if (!termsAccepted) {
+      toast.error("Please accept the Terms and Privacy Policy");
+      return;
+    }
+
+    setErrors({});
+
+    try {
+      const response = await axios.post("/api/auth/signup", formData);
+      toast.success("Signup successful! You can now log in.");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    } catch (error) {
+      if (error.response && error.response.data) {
+        const { message } = error.response.data;
+        toast.error(message || "Signup failed.");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
   };
 
   return (
@@ -71,6 +96,7 @@ const SignupPage = () => {
               onChange={handleChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
               placeholder="Choose a username"
+              required
             />
             {errors.username && (
               <p className="text-red-500 text-xs mt-1">{errors.username}</p>
@@ -89,27 +115,10 @@ const SignupPage = () => {
               onChange={handleChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
               placeholder="Your email address"
+              required
             />
             {errors.email && (
               <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium mb-1">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              placeholder="Mobile number"
-            />
-            {errors.phone && (
-              <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
             )}
           </div>
 
@@ -128,6 +137,7 @@ const SignupPage = () => {
               onChange={handleChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
               placeholder="Create a password"
+              required
             />
             <button
               type="button"
@@ -146,6 +156,9 @@ const SignupPage = () => {
               type="checkbox"
               id="terms"
               className="h-4 w-4 text-pink-500 focus:ring-pink-500 border-gray-700 rounded"
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+              required
             />
             <label htmlFor="terms" className="ml-2 block text-sm text-gray-400">
               I agree to the{" "}
@@ -161,7 +174,12 @@ const SignupPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-pink-500 to-yellow-500 hover:from-pink-600 hover:to-yellow-600 text-white py-2 px-4 rounded-md font-medium transition duration-300"
+            className={`w-full bg-gradient-to-r from-pink-500 to-yellow-500 text-white py-2 px-4 rounded-md font-medium transition duration-300 ${
+              !termsAccepted
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:from-pink-600 hover:to-yellow-600"
+            }`}
+            disabled={!termsAccepted}
           >
             Sign Up
           </button>

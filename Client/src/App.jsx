@@ -15,11 +15,36 @@ import UserSearch from "./Components/SearchUser";
 import ProductView from "./Components/ProductView";
 import SignupPage from "./Pages/SignUp";
 import LoginPage from "./Pages/Login";
+import { Toaster } from "react-hot-toast";
+
 function App() {
   return (
     <BrowserRouter>
       <Header />
+
       <div className="pt-16">
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: "#1f2937", // Tailwind's gray-800
+              color: "#fff",
+              border: "1px solid #4b5563", // gray-600
+            },
+            success: {
+              iconTheme: {
+                primary: "#10b981", // emerald
+                secondary: "#fff",
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: "#ef4444", // red
+                secondary: "#fff",
+              },
+            },
+          }}
+        />
         <Routes>
           <Route path="/post" element={<Post />} />
           <Route path="/reel" element={<ReelsPage />} />

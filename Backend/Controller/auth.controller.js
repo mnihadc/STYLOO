@@ -1,16 +1,23 @@
-import User from "../Model/User.model";
-import bcrypt from "bcrypt";
+import User from "../Model/User.model.js";
+import bcrypt from "bcryptjs";
 
 // Register User Controller
 export const registerUser = async (req, res) => {
   try {
-    const { username, email, phone, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Validate required fields
     if (!username || !email || !password) {
       return res
         .status(400)
         .json({ message: "Username, email, and password are required." });
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters long." });
     }
 
     // Check if user already exists
