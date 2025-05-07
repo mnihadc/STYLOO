@@ -7,16 +7,16 @@ import {
   FaGoogle,
   FaFacebook,
 } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
-const SignupPage = () => {
+const LoginPage = () => {
   const [formData, setFormData] = useState({
-    username: "",
     email: "",
     password: "",
-    phone: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,9 +35,8 @@ const SignupPage = () => {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md bg-gray-900 rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-center mb-6">
-          Create Your Account
-        </h2>
+        <h2 className="text-2xl font-bold text-center mb-6">Welcome Back</h2>
+
         {/* Social Login Buttons */}
         <div className="flex flex-col space-y-4 mb-6">
           <button className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition">
@@ -49,67 +48,31 @@ const SignupPage = () => {
             Continue with Google
           </button>
         </div>
+
         <div className="flex items-center my-6">
           <div className="flex-grow border-t border-gray-700"></div>
           <span className="mx-4 text-gray-400">OR</span>
           <div className="flex-grow border-t border-gray-700"></div>
         </div>
-        {/* Signup Form */}
+
+        {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium mb-1"
-            >
-              Username
+            <label htmlFor="email" className="block text-sm font-medium mb-1">
+              Email or Username
             </label>
             <input
               type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              placeholder="Choose a username"
-            />
-            {errors.username && (
-              <p className="text-red-500 text-xs mt-1">{errors.username}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">
-              Email
-            </label>
-            <input
-              type="email"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              placeholder="Your email address"
+              placeholder="Enter your email or username"
+              autoComplete="username"
             />
             {errors.email && (
               <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium mb-1">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              placeholder="Mobile number"
-            />
-            {errors.phone && (
-              <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
             )}
           </div>
 
@@ -127,7 +90,8 @@ const SignupPage = () => {
               value={formData.password}
               onChange={handleChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              placeholder="Create a password"
+              placeholder="Enter your password"
+              autoComplete="current-password"
             />
             <button
               type="button"
@@ -141,39 +105,46 @@ const SignupPage = () => {
             )}
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="terms"
-              className="h-4 w-4 text-pink-500 focus:ring-pink-500 border-gray-700 rounded"
-            />
-            <label htmlFor="terms" className="ml-2 block text-sm text-gray-400">
-              I agree to the{" "}
-              <a href="#" className="text-pink-500 hover:underline">
-                Terms
-              </a>{" "}
-              and{" "}
-              <a href="#" className="text-pink-500 hover:underline">
-                Privacy Policy
-              </a>
-            </label>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="remember"
+                checked={rememberMe}
+                onChange={() => setRememberMe(!rememberMe)}
+                className="h-4 w-4 text-pink-500 focus:ring-pink-500 border-gray-700 rounded"
+              />
+              <label
+                htmlFor="remember"
+                className="ml-2 block text-sm text-gray-400"
+              >
+                Remember me
+              </label>
+            </div>
+            <Link
+              to="/forgot-password"
+              className="text-sm text-pink-500 hover:underline"
+            >
+              Forgot password?
+            </Link>
           </div>
 
           <button
             type="submit"
             className="w-full bg-gradient-to-r from-pink-500 to-yellow-500 hover:from-pink-600 hover:to-yellow-600 text-white py-2 px-4 rounded-md font-medium transition duration-300"
           >
-            Sign Up
+            Log In
           </button>
         </form>
+
         <div className="mt-6 text-center text-sm text-gray-400">
-          Already have an account?{" "}
-          <a
-            href="/login"
+          Don't have an account?{" "}
+          <Link
+            to="/signup"
             className="text-pink-500 hover:underline font-medium"
           >
-            Log in
-          </a>
+            Sign up
+          </Link>
         </div>
       </div>
 
@@ -184,4 +155,4 @@ const SignupPage = () => {
   );
 };
 
-export default SignupPage;
+export default LoginPage;

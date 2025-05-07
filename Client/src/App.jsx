@@ -14,6 +14,7 @@ import SettingsPage from "./Pages/Settings";
 import UserSearch from "./Components/SearchUser";
 import ProductView from "./Components/ProductView";
 import SignupPage from "./Pages/SignUp";
+import LoginPage from "./Pages/Login";
 function App() {
   return (
     <BrowserRouter>
@@ -33,6 +34,7 @@ function App() {
           <Route path="/user-search" element={<UserSearch />} />
           <Route path="/product-view" element={<ProductView />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </div>
       <BottomHeader />
