@@ -2,7 +2,7 @@
   "name": "styloo_ui",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "App.js",
   "scripts": {
     "dev": "nodemon Backend/App.js",
     "start": "node Backend/App.js",
@@ -15,7 +15,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/mnihadc/STYLOO_UI/issues"
   },
@@ -24,7 +24,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "mongoose": "^8.14.1"
+    "mongoose": "^8.14.1",
+    "path-to-regexp": "^8.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
