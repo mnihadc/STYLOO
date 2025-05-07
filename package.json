@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon Backend/App.js"
+    "dev": "nodemon Backend/App.js",
+    "start": "nodemon Backend/App.js",
+    "build": "npm install && npm install --prefix Client && npm run build --prefix Client"
   },
   "repository": {
     "type": "git",
