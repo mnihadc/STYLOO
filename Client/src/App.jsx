@@ -16,6 +16,7 @@ import ProductView from "./Components/ProductView";
 import SignupPage from "./Pages/SignUp";
 import LoginPage from "./Pages/Login";
 import { Toaster } from "react-hot-toast";
+import UserRoute from "./Components/UserRoute";
 
 function App() {
   return (
@@ -59,20 +60,23 @@ function App() {
           }}
         />
         <Routes>
-          <Route path="/post" element={<Post />} />
           <Route path="/reel" element={<ReelsPage />} />
           <Route path="/shop" element={<ShopPage />} />
-          <Route path="/wishlist" element={<WishlistPage />} />
-          <Route path="/chatpage" element={<ChatPage />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/order" element={<OrderPage />} />
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/user-search" element={<UserSearch />} />
           <Route path="/product-view" element={<ProductView />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
+
+          <Route element={<UserRoute />}>
+            <Route path="/post" element={<Post />} />
+            <Route path="/wishlist" element={<WishlistPage />} />
+            <Route path="/chatpage" element={<ChatPage />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/order" element={<OrderPage />} />
+          </Route>
         </Routes>
       </div>
       <BottomHeader />
