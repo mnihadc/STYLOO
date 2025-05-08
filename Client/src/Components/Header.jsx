@@ -10,11 +10,14 @@ import {
   FiSettings,
   FiHelpCircle,
   FiLogOut,
-  FiPackage, // Order icon
+  FiPackage,
+  FiLogIn,
 } from "react-icons/fi";
+import { useSelector } from "react-redux";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { currentUser } = useSelector((state) => state.user);
 
   // Close menu when clicking outside or pressing Escape
   useEffect(() => {
@@ -80,12 +83,19 @@ const Header = () => {
       color: "text-teal-400",
       link: "/settings",
     },
-    {
-      icon: <FiLogOut size={20} />,
-      text: "Logout",
-      color: "text-gray-400",
-      link: "/logout",
-    },
+    currentUser
+      ? {
+          icon: <FiLogOut size={20} />,
+          text: "Logout",
+          color: "text-gray-400",
+          link: "/logout",
+        }
+      : {
+          icon: <FiLogIn size={20} />,
+          text: "Login",
+          color: "text-green-400",
+          link: "/login",
+        },
   ];
 
   return (
