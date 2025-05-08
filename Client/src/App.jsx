@@ -26,18 +26,31 @@ function App() {
         <Toaster
           position="top-right"
           toastOptions={{
+            // Global styles for all toasts
             style: {
               background: "#1f2937", // Tailwind's gray-800
               color: "#fff",
               border: "1px solid #4b5563", // gray-600
             },
+            // Success-specific options
             success: {
+              style: {
+                background: "#1f2937",
+                color: "#fff",
+                border: "1px solid #10b981", // emerald border for success
+              },
               iconTheme: {
                 primary: "#10b981", // emerald
                 secondary: "#fff",
               },
             },
+            // Error-specific options
             error: {
+              style: {
+                background: "#1f2937",
+                color: "#fff",
+                border: "1px solid #ef4444", // red border for error
+              },
               iconTheme: {
                 primary: "#ef4444", // red
                 secondary: "#fff",

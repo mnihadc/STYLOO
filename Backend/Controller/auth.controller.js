@@ -63,26 +63,31 @@ export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Validate input
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required." });
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required.",
+      });
     }
 
-    // Find user by email
     const user = await User.findOne({ email }).select("+password");
+
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
 
-    // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials." });
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials.",
+      });
     }
 
-    // Generate JWT with expiration time
     const token = jwt.sign(
       {
         id: user._id,
@@ -91,15 +96,22 @@ export const loginUser = async (req, res) => {
         role: user.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" } // Token expires in 1 hour
+      { expiresIn: "24h" }
     );
 
-    res.status(200).json({
-      message: "Login successful.",
+    // Exclude password
+    const { password: pwd, ...userData } = user._doc;
+
+    return res.status(200).json({
+      success: true,
       token,
+      user: userData,
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ message: "Internal server error." });
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
   }
 };

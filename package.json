@@ -31,6 +31,7 @@
     "mongoose": "^8.14.1",
     "path-to-regexp": "^8.2.0",
     "react-redux": "^9.2.0",
+    "react-toastify": "^11.0.5",
     "redux-persist": "^6.0.0"
   },
   "devDependencies": {

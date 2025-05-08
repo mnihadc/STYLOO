@@ -1,35 +1,51 @@
-import { useState } from "react";
-import {
-  FaInstagram,
-  FaShoppingCart,
-  FaEye,
-  FaEyeSlash,
-  FaGoogle,
-  FaFacebook,
-} from "react-icons/fa";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { FaFacebook, FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
+import axios from "axios";
+import { signInSuccess, signInFailure } from "../Redux/user/userSlice";
 
 const LoginPage = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading } = useSelector((state) => state.user);
+
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({});
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validation logic would go here
-    console.log("Form submitted:", formData);
+
+    try {
+      const response = await axios.post("/api/auth/login", formData);
+      const { success, user } = response.data;
+
+      if (success && user) {
+        dispatch(signInSuccess(user));
+        toast.success("Login successful!");
+        // Use a slightly longer delay or useEffect if needed
+        setTimeout(() => {
+          navigate("/shop");
+        }, 1500);
+      } else {
+        dispatch(signInFailure(message || "Login failed. Try again."));
+        toast.error(message || "Login failed. Try again.");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        (error.response?.status === 401
+          ? "Invalid email or password"
+          : "Something went wrong. Please try again.");
+      dispatch(signInFailure(errorMessage));
+      toast.error(errorMessage);
+    }
   };
 
   return (
@@ -39,11 +55,17 @@ const LoginPage = () => {
 
         {/* Social Login Buttons */}
         <div className="flex flex-col space-y-4 mb-6">
-          <button className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition">
+          <button
+            type="button"
+            className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition"
+          >
             <FaFacebook className="mr-2" />
             Continue with Facebook
           </button>
-          <button className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition">
+          <button
+            type="button"
+            className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition"
+          >
             <FaGoogle className="mr-2" />
             Continue with Google
           </button>
@@ -70,10 +92,8 @@ const LoginPage = () => {
               className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
               placeholder="Enter your email or username"
               autoComplete="username"
+              required
             />
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-            )}
           </div>
 
           <div className="relative">
@@ -92,6 +112,7 @@ const LoginPage = () => {
               className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
               placeholder="Enter your password"
               autoComplete="current-password"
+              required
             />
             <button
               type="button"
@@ -100,9 +121,6 @@ const LoginPage = () => {
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
-            {errors.password && (
-              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-            )}
           </div>
 
           <div className="flex items-center justify-between">
@@ -114,10 +132,7 @@ const LoginPage = () => {
                 onChange={() => setRememberMe(!rememberMe)}
                 className="h-4 w-4 text-pink-500 focus:ring-pink-500 border-gray-700 rounded"
               />
-              <label
-                htmlFor="remember"
-                className="ml-2 block text-sm text-gray-400"
-              >
+              <label htmlFor="remember" className="ml-2 text-sm text-gray-400">
                 Remember me
               </label>
             </div>
@@ -131,9 +146,12 @@ const LoginPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-pink-500 to-yellow-500 hover:from-pink-600 hover:to-yellow-600 text-white py-2 px-4 rounded-md font-medium transition duration-300"
+            disabled={loading}
+            className={`w-full bg-gradient-to-r from-pink-500 to-yellow-500 hover:from-pink-600 hover:to-yellow-600 text-white py-2 px-4 rounded-md font-medium transition duration-300 ${
+              loading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
           >
-            Log In
+            {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
 
