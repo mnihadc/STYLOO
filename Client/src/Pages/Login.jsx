@@ -31,7 +31,7 @@ const LoginPage = () => {
         toast.success("Login successful!");
         // Use a slightly longer delay or useEffect if needed
         setTimeout(() => {
-          navigate("/shop");
+          navigate("/");
         }, 1500);
       } else {
         dispatch(signInFailure(message || "Login failed. Try again."));

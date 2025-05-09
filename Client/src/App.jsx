@@ -61,7 +61,7 @@ function App() {
         />
         <Routes>
           <Route path="/reel" element={<ReelsPage />} />
-          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/" element={<ShopPage />} />
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/user-search" element={<UserSearch />} />

@@ -28,7 +28,7 @@ const BottomHeader = () => {
         </Link>
 
         {/* Shopping Icon */}
-        <Link to="/shop">
+        <Link to="/">
           <button className="flex flex-col items-center justify-center p-1.5 rounded-full hover:bg-gray-800 transition-all">
             <FiShoppingBag className="w-5 h-5" />
             <span className="text-[10px] mt-1">Shop</span>
