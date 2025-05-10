@@ -46,57 +46,104 @@ const Header = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const menuItems = [
-    {
-      icon: <FiUser size={20} />,
-      text: "Profile",
-      color: "text-pink-400",
-      link: "/profile",
-    },
-    {
-      icon: <FiShoppingCart size={20} />,
-      text: "Cart",
-      color: "text-purple-400",
-      link: "/cart",
-    },
-    {
-      icon: <FiPackage size={20} />,
-      text: "Orders",
-      color: "text-indigo-400",
-      link: "/order",
-    },
-    {
-      icon: <FiHeart size={20} />,
-      text: "Wishlist",
-      color: "text-red-400",
-      link: "/wishlist",
-    },
-    {
-      icon: <FiHelpCircle size={20} />,
-      text: "Help Center",
-      color: "text-blue-400",
-      link: "/help-center",
-    },
-    {
-      icon: <FiSettings size={20} />,
-      text: "Settings",
-      color: "text-teal-400",
-      link: "/settings",
-    },
-    currentUser
-      ? {
-          icon: <FiLogOut size={20} />,
-          text: "Logout",
-          color: "text-gray-400",
-          link: "/logout",
-        }
-      : {
+  const menuItems = currentUser
+    ? currentUser.role === "admin"
+      ? [
+          {
+            icon: <FiPackage size={20} />,
+            text: "Sales",
+            color: "text-yellow-400",
+            link: "/admin/sales",
+          },
+          {
+            icon: <FiShoppingCart size={20} />,
+            text: "List New Item",
+            color: "text-green-400",
+            link: "/admin/list-item",
+          },
+          {
+            icon: <FiSettings size={20} />,
+            text: "Update Item",
+            color: "text-blue-400",
+            link: "/admin/update-item",
+          },
+          {
+            icon: <FiPackage size={20} />,
+            text: "Orders",
+            color: "text-indigo-400",
+            link: "/admin/orders",
+          },
+          {
+            icon: <FiSettings size={20} />,
+            text: "Settings",
+            color: "text-teal-400",
+            link: "/settings",
+          },
+          {
+            icon: <FiHelpCircle size={20} />,
+            text: "Help Center",
+            color: "text-blue-400",
+            link: "/help-center",
+          },
+          {
+            icon: <FiLogOut size={20} />,
+            text: "Logout",
+            color: "text-gray-400",
+            link: "/logout",
+          },
+        ]
+      : [
+          {
+            icon: <FiUser size={20} />,
+            text: "Profile",
+            color: "text-pink-400",
+            link: "/profile",
+          },
+          {
+            icon: <FiShoppingCart size={20} />,
+            text: "Cart",
+            color: "text-purple-400",
+            link: "/cart",
+          },
+          {
+            icon: <FiPackage size={20} />,
+            text: "Orders",
+            color: "text-indigo-400",
+            link: "/order",
+          },
+          {
+            icon: <FiHeart size={20} />,
+            text: "Wishlist",
+            color: "text-red-400",
+            link: "/wishlist",
+          },
+          {
+            icon: <FiHelpCircle size={20} />,
+            text: "Help Center",
+            color: "text-blue-400",
+            link: "/help-center",
+          },
+          {
+            icon: <FiSettings size={20} />,
+            text: "Settings",
+            color: "text-teal-400",
+            link: "/settings",
+          },
+          {
+            icon: <FiLogOut size={20} />,
+            text: "Logout",
+            color: "text-gray-400",
+            link: "/logout",
+          },
+        ]
+    : [
+        {
           icon: <FiLogIn size={20} />,
           text: "Login",
           color: "text-green-400",
           link: "/login",
         },
-  ];
+      ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black bg-opacity-90 backdrop-blur-sm border-b border-gray-800">
