@@ -20,6 +20,7 @@ import UserRoute from "./Components/UserRoute";
 import AdminRoute from "./Components/AdminRoute";
 import NewProductPage from "./Admin/ListProduct";
 import ProductPage from "./Admin/UpdateProduct";
+import ViewProductPage from "./Admin/ViewProduct";
 
 function App() {
   return (
@@ -87,6 +88,7 @@ function App() {
               element={<NewProductPage />}
             />
             <Route path="/admin/update-product" element={<ProductPage />} />
+            <Route path="/admin/view-prdouct" element={<ViewProductPage />} />
           </Route>
         </Routes>
       </div>

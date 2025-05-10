@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const ProductPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -102,16 +103,18 @@ const ProductPage = () => {
                 className="bg-gray-800 rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-700"
               >
                 {/* Clickable Product Image */}
-                <div
-                  className="h-40 overflow-hidden relative cursor-pointer"
-                  onClick={() => handleViewProduct(product.id)}
-                >
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-contain p-2 hover:scale-105 transition-transform duration-200"
-                  />
-                </div>
+                <Link to="/admin/view-prdouct">
+                  <div
+                    className="h-40 overflow-hidden relative cursor-pointer"
+                    onClick={() => handleViewProduct(product.id)}
+                  >
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-contain p-2 hover:scale-105 transition-transform duration-200"
+                    />
+                  </div>
+                </Link>
 
                 {/* Product Details - Not clickable */}
                 <div className="p-2">
