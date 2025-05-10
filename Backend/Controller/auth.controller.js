@@ -88,9 +88,10 @@ export const loginUser = async (req, res) => {
       });
     }
 
+    // Use consistent property names (userId instead of id)
     const token = jwt.sign(
       {
-        id: user._id,
+        userId: user._id, // Changed from id to userId
         username: user.username,
         email: user.email,
         role: user.role,
@@ -101,6 +102,12 @@ export const loginUser = async (req, res) => {
 
     // Exclude password
     const { password: pwd, ...userData } = user._doc;
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: false, // true in production
+      sameSite: "Lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     return res.status(200).json({
       success: true,

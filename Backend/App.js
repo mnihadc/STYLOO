@@ -3,7 +3,9 @@ import dotenv from "dotenv";
 import path from "path";
 import mongoose from "mongoose";
 import authRoutes from "./Route/auth.route.js"; // ⬅️ Import the auth routes
-
+import userRoutes from "./Route/user.route.js";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 dotenv.config();
 const __dirname = path.resolve();
 const app = express();
@@ -11,11 +13,20 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.static(path.join(__dirname, "/Client/dist")));
 
-// Routes
-app.use("/api/auth", authRoutes); // ⬅️ Use the /api/auth route
-
+// Then your routes
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI, {

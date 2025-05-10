@@ -113,7 +113,7 @@ const Header = () => {
 
         {/* Center logo - responsive sizing */}
         <div className="flex-1 text-center px-2">
-          <Link to="/shop">
+          <Link to="/">
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
               <span className="rotate-text bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">
                 STYLOO

@@ -8,7 +8,9 @@ export default defineConfig({
     proxy: {
       "/api": {
         target: "http://localhost:3000",
+        changeOrigin: true, // Add this
         secure: false,
+        ws: true, // Optional: for WebSocket support
       },
     },
   },
