@@ -17,13 +17,15 @@ import SignupPage from "./Pages/SignUp";
 import LoginPage from "./Pages/Login";
 import { Toaster } from "react-hot-toast";
 import UserRoute from "./Components/UserRoute";
+import AdminRoute from "./Components/AdminRoute";
+import NewProductPage from "./Admin/ListProduct";
 
 function App() {
   return (
     <BrowserRouter>
       <Header />
 
-      <div className="pt-16">
+      <div className="pt-16 pb-16">
         <Toaster
           position="top-right"
           toastOptions={{
@@ -76,6 +78,10 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/order" element={<OrderPage />} />
+          </Route>
+
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/list-new-product" element={<NewProductPage />} />
           </Route>
         </Routes>
       </div>

@@ -59,7 +59,7 @@ const Header = () => {
             icon: <FiShoppingCart size={20} />,
             text: "List New Item",
             color: "text-green-400",
-            link: "/admin/list-item",
+            link: "/admin/list-new-product",
           },
           {
             icon: <FiSettings size={20} />,
