@@ -104,33 +104,46 @@ const NewProductPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // In a real app, you would:
-    // 1. Actually upload images to Cloudinary/S3
-    // 2. Send the product data to your backend
-    console.log("Product submitted:", product);
-
-    // Example API call (uncomment when you have your API ready)
-    /*
     try {
-      const response = await fetch('/api/products', {
-        method: 'POST',
+      // Optional: validate required fields here
+
+      // Get token from localStorage (or context)
+      const token = localStorage.getItem("token"); // Adjust as needed
+
+      const response = await fetch("/api/admin/create-new-product", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(product)
+        body: JSON.stringify(product),
       });
-      
+
       const data = await response.json();
+
       if (response.ok) {
-        // Handle success
+        alert("Product listed successfully!");
+        // Optionally reset the form
+        setProduct({
+          name: "",
+          brand: "",
+          price: 0,
+          description: "",
+          category: "electronics",
+          stock: 1,
+          images: [],
+          sizes: [{ size: "", stock: 0 }],
+          colors: [],
+          discount: 0,
+          specifications: [{ key: "", value: "" }],
+        });
       } else {
-        // Handle error
+        alert("Failed to list product: " + data.message);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error submitting product:", error);
+      alert("An unexpected error occurred.");
     }
-    */
   };
 
   return (
