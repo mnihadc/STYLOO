@@ -65,7 +65,7 @@ const Header = () => {
             icon: <FiSettings size={20} />,
             text: "Update Item",
             color: "text-blue-400",
-            link: "/admin/update-item",
+            link: "/admin/update-product",
           },
           {
             icon: <FiPackage size={20} />,

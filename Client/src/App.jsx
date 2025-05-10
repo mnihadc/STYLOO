@@ -19,6 +19,7 @@ import { Toaster } from "react-hot-toast";
 import UserRoute from "./Components/UserRoute";
 import AdminRoute from "./Components/AdminRoute";
 import NewProductPage from "./Admin/ListProduct";
+import ProductPage from "./Admin/UpdateProduct";
 
 function App() {
   return (
@@ -81,7 +82,11 @@ function App() {
           </Route>
 
           <Route element={<AdminRoute />}>
-            <Route path="/admin/list-new-product" element={<NewProductPage />} />
+            <Route
+              path="/admin/list-new-product"
+              element={<NewProductPage />}
+            />
+            <Route path="/admin/update-product" element={<ProductPage />} />
           </Route>
         </Routes>
       </div>
