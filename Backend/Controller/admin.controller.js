@@ -63,3 +63,13 @@ export const getUpdateProduct = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getProducts = async (req, res, next) => {
+  try {
+    const products = await Product.aggregate([{ $sample: { size: 20 } }]); // returns 20 random products
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching shuffled products:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
