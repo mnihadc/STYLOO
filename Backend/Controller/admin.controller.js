@@ -51,3 +51,15 @@ export const createProduct = async (req, res) => {
     res.status(500).json({ message: "Server error while creating product" });
   }
 };
+
+export const getUpdateProduct = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+
+    const products = await Product.find({ userId });
+
+    res.status(200).json(products);
+  } catch (error) {
+    next(error);
+  }
+};
