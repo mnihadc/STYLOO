@@ -115,3 +115,39 @@ export const removeFromCart = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const updateCartItem = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { productId, selectedSize, selectedColor, quantity } = req.body;
+
+    if (!productId || !selectedSize || !selectedColor || !quantity) {
+      return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    const cart = await Cart.findOne({ user: userId });
+
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    const item = cart.items.find(
+      (i) =>
+        i.product.toString() === productId &&
+        i.selectedSize === selectedSize &&
+        i.selectedColor === selectedColor
+    );
+
+    if (!item) {
+      return res.status(404).json({ message: "Cart item not found" });
+    }
+
+    item.quantity = quantity;
+    await cart.save();
+
+    res.status(200).json({ message: "Cart item updated", cart });
+  } catch (error) {
+    console.error("Error updating cart item:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
