@@ -6,7 +6,7 @@ import {
   FiPlus,
   FiMinus,
 } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, Links } from "react-router-dom";
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -215,10 +215,11 @@ const CartPage = () => {
                 <span className="font-bold">₹{total.toLocaleString()}</span>
               </div>
             </div>
-
-            <button className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold">
-              Proceed to Checkout
-            </button>
+            <Link to="/order-summery">
+              <button className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold">
+                Proceed to Checkout
+              </button>
+            </Link>
           </div>
         </>
       )}

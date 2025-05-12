@@ -21,6 +21,7 @@ import AdminRoute from "./Components/AdminRoute";
 import NewProductPage from "./Admin/ListProduct";
 import ProductPage from "./Admin/UpdateProduct";
 import ViewProductPage from "./Admin/ViewProduct";
+import OrderSummaryPage from "./Pages/OrderSummery";
 
 function App() {
   return (
@@ -80,6 +81,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/order" element={<OrderPage />} />
+            <Route path="/order-summery" element={<OrderSummaryPage />} />
           </Route>
 
           <Route element={<AdminRoute />}>
