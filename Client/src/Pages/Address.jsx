@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const AddressPage = () => {
   const [addresses, setAddresses] = useState([
@@ -48,9 +49,11 @@ const AddressPage = () => {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">My Addresses</h1>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-            + Create New
-          </button>
+          <Link to="/create-address">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+              + Create New
+            </button>
+          </Link>
         </div>
 
         {addresses.length === 0 ? (

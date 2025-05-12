@@ -23,6 +23,7 @@ import ProductPage from "./Admin/UpdateProduct";
 import ViewProductPage from "./Admin/ViewProduct";
 import OrderSummaryPage from "./Pages/OrderSummery";
 import AddressPage from "./Pages/Address";
+import AddressCreatePage from "./Pages/CreateAddress";
 
 function App() {
   return (
@@ -83,6 +84,7 @@ function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/order" element={<OrderPage />} />
             <Route path="/address" element={<AddressPage />} />
+            <Route path="/create-address" element={<AddressCreatePage />} />
             <Route path="/order-summery" element={<OrderSummaryPage />} />
           </Route>
 
