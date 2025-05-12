@@ -60,7 +60,6 @@ export const addToCart = async (req, res) => {
   }
 };
 
-
 export const getCart = async (req, res) => {
   const userId = req.user.userId;
 
@@ -71,12 +70,48 @@ export const getCart = async (req, res) => {
     });
 
     if (!cart || cart.items.length === 0) {
-      return res.status(200).json({ message: "Cart is empty", cart: { items: [] } });
+      return res
+        .status(200)
+        .json({ message: "Cart is empty", cart: { items: [] } });
     }
 
     res.status(200).json({ message: "Cart fetched successfully", cart });
   } catch (error) {
     console.error("Get cart error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const removeFromCart = async (req, res) => {
+  const userId = req.user.userId;
+  const { productId, selectedSize, selectedColor } = req.body;
+
+  try {
+    const cart = await Cart.findOne({ user: userId });
+
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    // Filter out the matching item (based on productId, size, and color)
+    const updatedItems = cart.items.filter(
+      (item) =>
+        item.product.toString() !== productId ||
+        item.selectedSize !== selectedSize ||
+        item.selectedColor !== selectedColor
+    );
+
+    // If no change, item wasn't found
+    if (updatedItems.length === cart.items.length) {
+      return res.status(404).json({ message: "Item not found in cart" });
+    }
+
+    cart.items = updatedItems;
+    await cart.save();
+
+    res.status(200).json({ message: "Item removed from cart", cart });
+  } catch (error) {
+    console.error("Remove from cart error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
