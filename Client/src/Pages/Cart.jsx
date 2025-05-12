@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FiShoppingCart,
   FiTrash2,
@@ -9,54 +9,53 @@ import {
 import { Link } from "react-router-dom";
 
 const CartPage = () => {
-  // Sample cart data
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Wireless Bluetooth Headphones",
-      price: 1299,
-      image: "https://m.media-amazon.com/images/I/61SUj2aKoEL._SL1500_.jpg",
-      quantity: 1,
-      inStock: true,
-    },
-    {
-      id: 2,
-      name: "Smart Watch Fitness Tracker",
-      price: 1499,
-      image: "https://m.media-amazon.com/images/I/61oXbG5yZML._SL1500_.jpg",
-      quantity: 2,
-      inStock: true,
-    },
-    {
-      id: 3,
-      name: "Portable Bluetooth Speaker",
-      price: 999,
-      image: "https://m.media-amazon.com/images/I/71S8qt+K8hL._SL1500_.jpg",
-      quantity: 1,
-      inStock: false,
-    },
-  ]);
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Calculate subtotal
+  const fetchCart = async () => {
+    try {
+      const res = await fetch("/api/cart/user-cart", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setCartItems(data.cart?.items || []);
+      } else {
+        console.error("Failed to fetch cart:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const updateQuantity = (index, newQuantity) => {
+    if (newQuantity < 1) return;
+    const updatedItems = [...cartItems];
+    updatedItems[index].quantity = newQuantity;
+    setCartItems(updatedItems);
+  };
+
+  const removeItem = (index) => {
+    const updatedItems = [...cartItems];
+    updatedItems.splice(index, 1);
+    setCartItems(updatedItems);
+  };
+
   const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) => total + item.product.price * item.quantity,
     0
   );
   const shipping = 99;
   const total = subtotal + shipping;
-
-  const updateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
-
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-  };
 
   return (
     <div className="bg-black text-white min-h-screen pb-20">
@@ -68,56 +67,63 @@ const CartPage = () => {
           </button>
         </Link>
         <h1 className="text-xl font-bold">Your Cart</h1>
-        <div className="w-6"></div> {/* Spacer for alignment */}
+        <div className="w-6"></div>
       </div>
 
-      {/* Empty State */}
-      {cartItems.length === 0 ? (
+      {/* Loading */}
+      {loading ? (
+        <div className="text-center py-20 text-gray-400">Loading cart...</div>
+      ) : cartItems.length === 0 ? (
+        // Empty State
         <div className="flex flex-col items-center justify-center h-96 px-4 text-center">
           <FiShoppingCart className="text-5xl text-gray-600 mb-4" />
           <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
           <p className="text-gray-400 mb-6">
             Looks like you haven't added anything to your cart yet
           </p>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-full font-medium">
-            Continue Shopping
-          </button>
+          <Link to="/shop">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-full font-medium">
+              Continue Shopping
+            </button>
+          </Link>
         </div>
       ) : (
         <>
           {/* Cart Items */}
           <div className="p-4 space-y-4">
-            {cartItems.map((item) => (
+            {cartItems.map((item, index) => (
               <div
-                key={item.id}
+                key={item._id || index}
                 className="bg-gray-900 rounded-lg p-3 border border-gray-800"
               >
                 <div className="flex">
                   <div className="w-24 h-24 bg-gray-800 rounded-md overflow-hidden flex-shrink-0">
                     <img
-                      src={item.image}
-                      alt={item.name}
+                      src={item.product.imageUrl || item.product.image}
+                      alt={item.product.name}
                       className="w-full h-full object-contain"
                     />
                   </div>
 
                   <div className="ml-3 flex-1">
-                    <h3 className="font-medium line-clamp-2">{item.name}</h3>
+                    <h3 className="font-medium line-clamp-2">
+                      {item.product.name}
+                    </h3>
                     <div className="flex items-center mt-1">
                       <span className="text-lg font-bold">
-                        ₹{item.price.toLocaleString()}
+                        ₹{item.product.price.toLocaleString()}
                       </span>
                     </div>
 
-                    {!item.inStock && (
-                      <p className="text-red-500 text-xs mt-1">Out of Stock</p>
-                    )}
+                    <p className="text-sm text-gray-400 mt-1">
+                      Size: {item.selectedSize} | Color: {item.selectedColor}
+                    </p>
 
                     <div className="flex justify-between items-center mt-3">
                       <div className="flex items-center border border-gray-700 rounded-lg">
                         <button
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
+                            updateQuantity(index, item.quantity - 1)
                           }
                           className="px-3 py-1 text-gray-400 hover:text-white"
                         >
@@ -126,7 +132,7 @@ const CartPage = () => {
                         <span className="px-3">{item.quantity}</span>
                         <button
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
+                            updateQuantity(index, item.quantity + 1)
                           }
                           className="px-3 py-1 text-gray-400 hover:text-white"
                         >
@@ -135,7 +141,7 @@ const CartPage = () => {
                       </div>
 
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(index)}
                         className="text-red-500 hover:text-red-400"
                       >
                         <FiTrash2 />
