@@ -44,10 +44,31 @@ const CartPage = () => {
     setCartItems(updatedItems);
   };
 
-  const removeItem = (index) => {
-    const updatedItems = [...cartItems];
-    updatedItems.splice(index, 1);
-    setCartItems(updatedItems);
+  const removeItem = async (index) => {
+    const item = cartItems[index];
+    try {
+      const res = await fetch("/api/cart/remove-product", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          productId: item.product._id,
+          selectedSize: item.selectedSize,
+          selectedColor: item.selectedColor,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        fetchCart(); // Refresh cart after successful deletion
+      } else {
+        console.error("Failed to remove item:", data.message);
+      }
+    } catch (error) {
+      console.error("Error removing item:", error);
+    }
   };
 
   const subtotal = cartItems.reduce(
@@ -61,7 +82,7 @@ const CartPage = () => {
     <div className="bg-black text-white min-h-screen pb-20">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black p-4 border-b border-gray-800 flex items-center justify-between">
-        <Link to="/shop">
+        <Link to="/">
           <button className="text-xl">
             <FiChevronLeft />
           </button>
@@ -81,7 +102,7 @@ const CartPage = () => {
           <p className="text-gray-400 mb-6">
             Looks like you haven't added anything to your cart yet
           </p>
-          <Link to="/shop">
+          <Link to="/">
             <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-full font-medium">
               Continue Shopping
             </button>
