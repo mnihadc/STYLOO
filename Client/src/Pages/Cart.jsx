@@ -37,11 +37,34 @@ const CartPage = () => {
     fetchCart();
   }, []);
 
-  const updateQuantity = (index, newQuantity) => {
+  const updateQuantity = async (index, newQuantity) => {
     if (newQuantity < 1) return;
-    const updatedItems = [...cartItems];
-    updatedItems[index].quantity = newQuantity;
-    setCartItems(updatedItems);
+
+    const item = cartItems[index];
+    try {
+      const res = await fetch("/api/cart/update-product", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          productId: item.product._id,
+          selectedSize: item.selectedSize,
+          selectedColor: item.selectedColor,
+          quantity: newQuantity,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        fetchCart(); // Refresh cart from backend
+      } else {
+        console.error("Failed to update quantity:", data.message);
+      }
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
   };
 
   const removeItem = async (index) => {
