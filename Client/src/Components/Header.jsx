@@ -12,6 +12,7 @@ import {
   FiLogOut,
   FiPackage,
   FiLogIn,
+  FiMapPin,
 } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
@@ -138,6 +139,12 @@ const Header = () => {
             text: "Wishlist",
             color: "text-red-400",
             link: "/wishlist",
+          },
+          {
+            icon: <FiMapPin />,
+            text: "Address",
+            color: "text-blue-400",
+            link: "/address",
           },
           {
             icon: <FiHelpCircle />,

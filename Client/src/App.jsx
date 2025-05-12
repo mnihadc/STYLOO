@@ -22,6 +22,7 @@ import NewProductPage from "./Admin/ListProduct";
 import ProductPage from "./Admin/UpdateProduct";
 import ViewProductPage from "./Admin/ViewProduct";
 import OrderSummaryPage from "./Pages/OrderSummery";
+import AddressPage from "./Pages/Address";
 
 function App() {
   return (
@@ -81,6 +82,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/order" element={<OrderPage />} />
+            <Route path="/address" element={<AddressPage />} />
             <Route path="/order-summery" element={<OrderSummaryPage />} />
           </Route>
 
