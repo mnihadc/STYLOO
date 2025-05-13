@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   FiPackage,
   FiChevronLeft,
@@ -7,52 +7,36 @@ import {
   FiTruck,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const OrderPage = () => {
-  // Sample order data
-  const orders = [
-    {
-      id: "#STY-78459",
-      date: "15 Oct 2023",
-      status: "Delivered",
-      items: [
-        {
-          id: 1,
-          name: "Wireless Bluetooth Headphones",
-          price: 1299,
-          image: "https://m.media-amazon.com/images/I/61SUj2aKoEL._SL1500_.jpg",
-          quantity: 1,
-        },
-        {
-          id: 2,
-          name: "Smart Watch Fitness Tracker",
-          price: 1499,
-          image: "https://m.media-amazon.com/images/I/61oXbG5yZML._SL1500_.jpg",
-          quantity: 1,
-        },
-      ],
-      total: 2798,
-      shippingAddress: "123 Main St, Apartment 4B, Bangalore, Karnataka 560001",
-      paymentMethod: "Credit Card (•••• •••• •••• 4242)",
-    },
-    {
-      id: "#STY-68123",
-      date: "5 Oct 2023",
-      status: "Shipped",
-      items: [
-        {
-          id: 3,
-          name: "Portable Bluetooth Speaker",
-          price: 999,
-          image: "https://m.media-amazon.com/images/I/71S8qt+K8hL._SL1500_.jpg",
-          quantity: 2,
-        },
-      ],
-      total: 1998,
-      shippingAddress: "456 Oak Ave, Bangalore, Karnataka 560034",
-      paymentMethod: "UPI (user@upi)",
-    },
-  ];
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await axios.get("/api/order/get-orders", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+
+        if (response.data.success) {
+          setOrders(response.data.orders);
+        } else {
+          setError(response.data.message || "Failed to fetch orders");
+        }
+      } catch (err) {
+        setError(err.response?.data?.message || "Error fetching orders");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -76,11 +60,35 @@ const OrderPage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="bg-black text-white min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-black text-white min-h-screen flex items-center justify-center">
+        <div className="text-center p-4">
+          <p className="text-red-400 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-black text-white min-h-screen pb-20">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black p-4 border-b border-gray-800 flex items-center justify-between">
-        <Link to="/shop">
+        <Link to="/">
           <button className="text-xl">
             <FiChevronLeft />
           </button>

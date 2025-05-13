@@ -8,6 +8,6 @@ import {
 const router = express.Router();
 
 router.post("/place-cod-order", UserVerifyToken, placeCashOnDeliveryOrder);
-router.get("/get-order", UserVerifyToken, getOrders);
+router.get("/get-orders", UserVerifyToken, getOrders);
 
 export default router;

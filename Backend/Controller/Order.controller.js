@@ -2,6 +2,7 @@
 import Order from "../Model/Order.model.js";
 import Cart from "../Model/Cart.js";
 import Address from "../Model/Address.model.js";
+import mongoose from "mongoose";
 
 // controllers/orderController.js
 export const placeCashOnDeliveryOrder = async (req, res) => {
@@ -69,14 +70,18 @@ export const getOrders = async (req, res, next) => {
 
     // Validate user ID
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid user ID" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
     }
+
+    // Create ObjectId instances properly
+    const userIdObj = new mongoose.Types.ObjectId(userId);
 
     // Fetch orders sorted by createdAt in descending order
     const orders = await Order.aggregate([
-      { $match: { user: mongoose.Types.ObjectId(userId) } },
+      { $match: { user: userIdObj } },
       { $sort: { createdAt: -1 } }, // -1 for descending
       {
         $lookup: {
@@ -88,7 +93,7 @@ export const getOrders = async (req, res, next) => {
       },
       {
         $project: {
-          orderId: 1,
+          orderId: { $toString: "$_id" }, // Convert ObjectId to string
           createdAt: 1,
           orderStatus: 1,
           totalAmount: 1,
@@ -108,7 +113,9 @@ export const getOrders = async (req, res, next) => {
                           $filter: {
                             input: "$productDetails",
                             as: "pd",
-                            cond: { $eq: ["$$pd._id", "$$product.product"] },
+                            cond: {
+                              $eq: ["$$pd._id", "$$product.product"],
+                            },
                           },
                         },
                         0,
@@ -133,7 +140,7 @@ export const getOrders = async (req, res, next) => {
 
     // Format the response to match your frontend structure
     const formattedOrders = orders.map((order) => ({
-      id: `#${order.orderId.toString().slice(-6).toUpperCase()}`,
+      id: `#${order.orderId.slice(-6).toUpperCase()}`, // Use the converted string
       date: new Date(order.createdAt).toLocaleDateString("en-US", {
         day: "numeric",
         month: "short",
@@ -141,10 +148,11 @@ export const getOrders = async (req, res, next) => {
       }),
       status: order.orderStatus,
       items: order.products.map((product) => ({
-        id: product.product._id,
-        name: product.productDetails.name,
-        price: product.productDetails.price,
-        image: product.productDetails.images[0] || "default-product-image.jpg",
+        id: product.product._id.toString(), // Convert to string
+        name: product.productDetails?.name || "Unknown Product",
+        price: product.productDetails?.price || 0,
+        image:
+          product.productDetails?.images?.[0] || "default-product-image.jpg",
         quantity: product.quantity,
       })),
       total: order.totalAmount,
