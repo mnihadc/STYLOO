@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useLocation, Link } from "react-router-dom";
 import {
   CheckCircle,
   Truck,
@@ -12,43 +14,86 @@ import {
   Download,
   Clock,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 
 const OrderSuccessPage = () => {
-  const [paymentStatus, setPaymentStatus] = useState("processing");
-  const [paymentMethod, setPaymentMethod] = useState("UPI");
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const orderIdFromParams = queryParams.get("orderId");
+  const paymentMethodFromParams = queryParams.get("paymentMethod");
+
+  const [paymentStatus, setPaymentStatus] = useState(
+    paymentMethodFromParams === "COD" ? "cod" : "processing"
+  );
+  const [paymentMethod, setPaymentMethod] = useState(
+    paymentMethodFromParams || "UPI"
+  );
   const [isAnimating, setIsAnimating] = useState(false);
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setPaymentStatus("paid");
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
+    // If coming from COD, skip payment processing
+    if (paymentMethodFromParams === "COD") {
+      setPaymentStatus("cod");
+    }
 
-  const orderDetails = {
-    orderId: `#${Math.floor(Math.random() * 1000000000)}`,
-    date: new Date().toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }),
-    deliveryDate: new Date(
-      Date.now() + 3 * 24 * 60 * 60 * 1000
-    ).toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }),
-    paymentMethod: paymentMethod,
-    amount: "₹4,999.00",
-    shippingAddress: "123 Main Street, Bangalore, Karnataka 560001, India",
-    items: [
-      { name: "Wireless Bluetooth Headphones", quantity: 1, price: "₹1,999" },
-      { name: "Smart Watch Pro", quantity: 1, price: "₹2,999" },
-    ],
-  };
+    // For UPI payments, simulate processing
+    const timer = setTimeout(() => {
+      if (paymentMethodFromParams !== "COD") {
+        setPaymentStatus("paid");
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [paymentMethodFromParams]);
+
+  useEffect(() => {
+    const initializeOrderDetails = async () => {
+      try {
+        setLoading(true);
+
+        // In a real app, you would fetch order details from your API here
+        const mockOrder = {
+          orderId:
+            orderIdFromParams || `#${Math.floor(Math.random() * 1000000000)}`,
+          date: new Date().toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          }),
+          deliveryDate: new Date(
+            Date.now() + 3 * 24 * 60 * 60 * 1000
+          ).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          }),
+          paymentMethod: paymentMethodFromParams || "UPI",
+          amount: "₹4,999.00",
+          shippingAddress:
+            "123 Main Street, Bangalore, Karnataka 560001, India",
+          items: [
+            {
+              name: "Wireless Bluetooth Headphones",
+              quantity: 1,
+              price: "₹1,999",
+            },
+            { name: "Smart Watch Pro", quantity: 1, price: "₹2,999" },
+          ],
+        };
+
+        setOrderDetails(mockOrder);
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to load order details:", err);
+        setError("Failed to load order details");
+        setLoading(false);
+      }
+    };
+
+    initializeOrderDetails();
+  }, [orderIdFromParams, paymentMethodFromParams]);
 
   const handlePaymentMethodChange = (method) => {
     setIsAnimating(true);
@@ -66,6 +111,49 @@ const OrderSuccessPage = () => {
       setIsAnimating(false);
     }, 500);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-4">
+            Error loading order details
+          </h2>
+          <p className="mb-4">{error}</p>
+          <Link
+            to="/"
+            className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded"
+          >
+            Return to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!orderDetails) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-4">No order details found</h2>
+          <Link
+            to="/"
+            className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded"
+          >
+            Return to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-gray-100 overflow-x-hidden">

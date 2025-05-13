@@ -93,7 +93,9 @@ const OrderSummaryPage = () => {
   const handlePlaceOrder = async () => {
     if (selectedPayment === "cod") {
       try {
-        const res = await fetch("/api/order/place-cod-order", {
+        setOrderStatus("Processing your order...");
+
+        const response = await fetch("/api/order/place-cod-order", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -104,14 +106,21 @@ const OrderSummaryPage = () => {
           }),
         });
 
-        const data = await res.json();
-        if (res.ok) {
-          setOrderStatus("Order placed successfully!");
-        } else {
-          setOrderStatus(`Failed to place order: ${data.message}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to place order");
         }
+
+        // Redirect to success page with order details
+        window.location.href =
+          data.redirectUrl ||
+          `/place-order-success?orderId=${data.orderId}&paymentMethod=COD`;
       } catch (error) {
-        setOrderStatus("Something went wrong while placing your order.", error);
+        console.error("Order placement error:", error);
+        setOrderStatus(
+          error.message || "Something went wrong while placing your order."
+        );
       }
     }
   };

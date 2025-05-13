@@ -3,6 +3,7 @@ import Order from "../Model/Order.model.js";
 import Cart from "../Model/Cart.js";
 import Address from "../Model/Address.model.js";
 
+// controllers/orderController.js
 export const placeCashOnDeliveryOrder = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -15,7 +16,6 @@ export const placeCashOnDeliveryOrder = async (req, res) => {
 
     // Fetch default address
     const address = await Address.findOne({ userId: userId, isDefault: true });
-
     if (!address) {
       return res.status(400).json({ message: "No default address found" });
     }
@@ -52,9 +52,10 @@ export const placeCashOnDeliveryOrder = async (req, res) => {
     // Clear cart
     await Cart.findOneAndUpdate({ user: userId }, { items: [] });
 
+    // Redirect to success page with order details
     return res.status(201).json({
-      message: "Order placed successfully",
-      orderId: newOrder._id,
+      success: true,
+      redirectUrl: `/place-order-success?orderId=${newOrder._id}&paymentMethod=COD`,
     });
   } catch (error) {
     console.error("Order placement error:", error);
