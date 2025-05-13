@@ -90,3 +90,34 @@ export const deleteAddress = async (req, res, next) => {
     next(error);
   }
 };
+
+export const selectAddressAsDefault = async (req, res) => {
+  const addressId = req.params.id;
+  const userId = req.user.userId;
+
+  try {
+    // Check if the address belongs to the logged-in user
+    const address = await Address.findOne({ _id: addressId, userId });
+    if (!address) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Address not found" });
+    }
+
+    // Set all user's addresses to isDefault: false
+    await Address.updateMany({ userId }, { $set: { isDefault: false } });
+
+    // Set the selected address as default
+    address.isDefault = true;
+    await address.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Address set as default successfully",
+      data: address,
+    });
+  } catch (error) {
+    console.error("Error setting default address:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
