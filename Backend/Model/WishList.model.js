@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
-const wishlistSchema = new mongoose.Schema(
+const wishlistSchema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -27,4 +28,5 @@ const wishlistSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Wishlist", wishlistSchema);
+const WishList = mongoose.model("Wishlist", wishlistSchema);
+export default WishList;

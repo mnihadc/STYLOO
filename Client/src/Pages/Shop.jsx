@@ -92,7 +92,50 @@ const ShopPage = () => {
       }
     }
   };
+  const handleAddToWishlist = async (productId) => {
+    try {
+      const token = localStorage.getItem("authToken");
 
+      const res = await axios.post(
+        "/api/wishlist/addtowishlist",
+        { productId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("❤️ Added to wishlist!");
+    } catch (err) {
+      const status = err.response?.status;
+      const message = err.response?.data?.message || "Something went wrong";
+
+      if (status === 409) {
+        toast("⚠️ Already in wishlist!", {
+          icon: "💖",
+          style: {
+            background: "#1f2937",
+            color: "#fff",
+            border: "1px solid #f59e0b",
+          },
+        });
+      } else if (status === 403) {
+        toast.error(`⛔ ${message}`, {
+          style: {
+            background: "#1f2937",
+            color: "#fff",
+            border: "1px solid #ef4444",
+          },
+        });
+      } else if (status === 401) {
+        toast.error("🔒 Please login first!");
+      } else {
+        console.error("Add to wishlist error:", err);
+        toast.error("❌ Failed to add to wishlist.");
+      }
+    }
+  };
   return (
     <div className="bg-black min-h-screen pb-16 text-white">
       {/* Search Bar */}
@@ -147,7 +190,10 @@ const ShopPage = () => {
                     alt={product.name}
                     className="w-full h-40 object-contain p-2 bg-white"
                   />
-                  <button className="absolute top-2 right-2 p-1 bg-gray-900 rounded-full hover:bg-gray-700">
+                  <button
+                    className="absolute top-2 right-2 p-1 bg-gray-900 rounded-full hover:bg-gray-700"
+                    onClick={() => handleAddToWishlist(product._id)}
+                  >
                     <FiHeart className="text-gray-300 hover:text-red-500" />
                   </button>
                   <div className="absolute bottom-2 left-2 bg-yellow-400 text-black text-xs px-2 py-0.5 rounded">

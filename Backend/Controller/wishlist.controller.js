@@ -1,9 +1,9 @@
-import Wishlist from "../Model/WishList.model";
+import Wishlist from "../Model/WishList.model.js";
 
 export const addToWishList = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const { productId } = req.body;
+    const { productId } = req.body; 
 
     if (!productId) {
       return res.status(400).json({ message: "Product ID is required" });

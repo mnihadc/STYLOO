@@ -8,6 +8,8 @@ import adminRoutes from "./Route/admin.route.js";
 import cartRoutes from "./Route/cart.route.js";
 import addressRoutes from "./Route/address.route.js";
 import orderRoutes from "./Route/order.route.js";
+import wishlistRoutes from "./Route/wishlist.route.js";
+
 import cookieParser from "cookie-parser";
 import cors from "cors";
 dotenv.config();
@@ -35,6 +37,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/order", orderRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI, {
