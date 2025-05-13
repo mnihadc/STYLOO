@@ -40,18 +40,37 @@ const AddressPage = () => {
     fetchAddresses();
   }, []);
 
-  const handleSelectAddress = (id) => {
-    setSelectedAddress(id);
+  const handleSelectAddress = async (id) => {
+    setSelectedAddress(id); // update local state for UI
+
+    try {
+      const response = await axios.put(
+        `/api/address/select-address/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
+      if (response.data.success) {
+        toast.success("Address selected as default");
+        fetchAddresses(); // refresh the list to reflect updated default
+      }
+    } catch (error) {
+      console.error("Failed to select address:", error);
+      toast.error("Failed to select address. Please try again.");
+    }
   };
 
   const handleSetDefault = async (id) => {
     try {
       const response = await axios.put(
-        `/api/address/set-default/${id}`,
+        `/api/address/select-address/${id}`,
         {},
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         }
       );
