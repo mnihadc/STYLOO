@@ -14,7 +14,8 @@ export const placeCashOnDeliveryOrder = async (req, res) => {
     }
 
     // Fetch default address
-    const address = await Address.findOne({ user: userId, isDefault: true });
+    const address = await Address.findOne({ userId: userId, isDefault: true });
+
     if (!address) {
       return res.status(400).json({ message: "No default address found" });
     }

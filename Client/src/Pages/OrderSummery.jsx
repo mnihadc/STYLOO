@@ -6,6 +6,7 @@ const OrderSummaryPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState("");
+  const [orderStatus, setOrderStatus] = useState(""); // To track the order status
 
   const fetchCart = async () => {
     try {
@@ -27,6 +28,7 @@ const OrderSummaryPage = () => {
       setLoading(false);
     }
   };
+
   const [address, setAddress] = useState(null);
 
   const fetchDefaultAddress = async () => {
@@ -41,7 +43,7 @@ const OrderSummaryPage = () => {
         const data = await res.json();
         setAddress(data.data);
       } else {
-        setAddress(null); // No default address found
+        setAddress(null);
       }
     } catch (error) {
       console.error("Error fetching address:", error);
@@ -88,10 +90,34 @@ const OrderSummaryPage = () => {
     },
   ];
 
+  const handlePlaceOrder = async () => {
+    if (selectedPayment === "cod") {
+      try {
+        const res = await fetch("/api/order/place-cod-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          body: JSON.stringify({
+            paymentMethod: "Cash on Delivery",
+          }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          setOrderStatus("Order placed successfully!");
+        } else {
+          setOrderStatus(`Failed to place order: ${data.message}`);
+        }
+      } catch (error) {
+        setOrderStatus("Something went wrong while placing your order.", error);
+      }
+    }
+  };
+
   return (
     <div className="bg-black text-white min-h-screen">
-      {" "}
-      {/* Increased bottom padding */}
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black p-4 border-b border-gray-800 flex items-center justify-between">
         <Link to="/">
@@ -102,11 +128,12 @@ const OrderSummaryPage = () => {
         <h1 className="text-xl font-bold">Order Summary</h1>
         <div className="w-6"></div>
       </div>
-      {/* Loading */}
+
+      {/* Loading State */}
       {loading ? (
         <div className="text-center py-20 text-gray-400">Loading...</div>
       ) : cartItems.length === 0 ? (
-        // Empty State
+        // Empty Cart State
         <div className="flex flex-col items-center justify-center h-96 px-4 text-center">
           <FiShoppingCart className="text-5xl text-gray-600 mb-4" />
           <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
@@ -121,9 +148,7 @@ const OrderSummaryPage = () => {
         </div>
       ) : (
         <div className="pb-32">
-          {" "}
-          {/* Increased bottom padding */}
-          {/* Delivery Address */}
+          {/* Delivery Address Section */}
           <div className="p-4 border-b border-gray-800">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-bold">Delivery Address</h2>
@@ -162,7 +187,8 @@ const OrderSummaryPage = () => {
               </div>
             )}
           </div>
-          {/* Order Items */}
+
+          {/* Order Items Section */}
           <div className="p-4 border-b border-gray-800">
             <h2 className="text-lg font-bold mb-2">
               Order Items ({cartItems.length})
@@ -180,7 +206,6 @@ const OrderSummaryPage = () => {
                       className="w-full h-full object-contain"
                     />
                   </div>
-
                   <div className="ml-3 flex-1">
                     <h3 className="font-medium line-clamp-2">
                       {item.product.name}
@@ -190,7 +215,6 @@ const OrderSummaryPage = () => {
                         ₹{item.product.price.toLocaleString()}
                       </span>
                     </div>
-
                     <p className="text-sm text-gray-400 mt-1">
                       Size: {item.selectedSize} | Color: {item.selectedColor}
                     </p>
@@ -202,6 +226,7 @@ const OrderSummaryPage = () => {
               ))}
             </div>
           </div>
+
           {/* Price Details */}
           <div className="p-4 border-b border-gray-800">
             <h2 className="text-lg font-bold mb-3">Price Details</h2>
@@ -224,10 +249,9 @@ const OrderSummaryPage = () => {
               </div>
             </div>
           </div>
+
           {/* Payment Options */}
           <div className="p-4 mb-24">
-            {" "}
-            {/* Added margin bottom */}
             <h2 className="text-lg font-bold mb-3">Choose Payment Method</h2>
             <div className="space-y-3">
               {paymentOptions.map((option) => (
@@ -264,9 +288,17 @@ const OrderSummaryPage = () => {
               ))}
             </div>
           </div>
+
+          {/* Order Status Message */}
+          {orderStatus && (
+            <div className="text-center text-lg font-semibold mb-4 text-green-500">
+              {orderStatus}
+            </div>
+          )}
         </div>
       )}
-      {/* Fixed Bottom Checkout Button - Now properly spaced */}
+
+      {/* Fixed Bottom Checkout Button */}
       {cartItems.length > 0 && (
         <div className="fixed bottom-16 left-0 right-0 bg-black border-t border-gray-800 p-4 z-40">
           <div className="flex justify-between items-center mb-2">
@@ -280,6 +312,7 @@ const OrderSummaryPage = () => {
                 : "bg-gray-700 cursor-not-allowed"
             }`}
             disabled={!selectedPayment}
+            onClick={handlePlaceOrder}
           >
             {selectedPayment === "cod" ? "Place Order" : "Pay Now"}
           </button>
