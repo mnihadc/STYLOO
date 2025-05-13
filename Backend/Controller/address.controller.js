@@ -121,3 +121,25 @@ export const selectAddressAsDefault = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+export const getDefaultAddress = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const data = await Address.findOne({ userId, isDefault: true });
+
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        message: "No default address found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Default address fetched successfully",
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
