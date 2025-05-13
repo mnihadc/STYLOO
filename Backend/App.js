@@ -6,6 +6,7 @@ import authRoutes from "./Route/auth.route.js"; // ⬅️ Import the auth routes
 import userRoutes from "./Route/user.route.js";
 import adminRoutes from "./Route/admin.route.js";
 import cartRoutes from "./Route/cart.route.js";
+import addressRoutes from "./Route/address.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 dotenv.config();
@@ -31,6 +32,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/address", addressRoutes);
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI, {
