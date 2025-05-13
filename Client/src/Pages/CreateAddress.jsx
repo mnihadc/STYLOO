@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import {
   FiArrowLeft,
   FiMapPin,
@@ -34,12 +35,22 @@ const AddressCreatePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Replace with your API call
-      // const response = await axios.post('/api/addresses', formData);
-      console.log("Address submitted:", formData);
-      navigate("/addresses"); // Redirect to address list after creation
+      const response = await axios.post(
+        "/api/address/create-address",
+        formData,
+        {
+          headers: {
+            Authorization: "authToken",
+          },
+        }
+      );
+      console.log("Address created:", response.data);
+      navigate("/address");
     } catch (error) {
-      console.error("Error creating address:", error);
+      console.error(
+        "Error creating address:",
+        error.response?.data || error.message
+      );
     }
   };
 
