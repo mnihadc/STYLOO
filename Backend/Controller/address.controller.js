@@ -1,4 +1,5 @@
 import Address from "../Model/Address.model.js";
+import User from "../Model/User.model.js";
 
 export const createAddress = async (req, res) => {
   try {
@@ -68,5 +69,24 @@ export const getAddressData = async (req, res, next) => {
       message: "Something went wrong while fetching addresses.",
       error: error.message,
     });
+  }
+};
+
+export const deleteAddress = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    const result = await Address.deleteOne({ userId, _id: id });
+
+    if (result.deletedCount === 0) {
+      return res
+        .status(404)
+        .json({ message: "Address not found or not authorized" });
+    }
+
+    res.status(200).json({ message: "Address deleted successfully" });
+  } catch (error) {
+    next(error);
   }
 };
