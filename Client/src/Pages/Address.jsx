@@ -1,47 +1,69 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { Trash2 } from "lucide-react";
 
 const AddressPage = () => {
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      street: "123 Main Street",
-      city: "New York",
-      state: "NY",
-      zip: "10001",
-      country: "United States",
-      phone: "+1 (555) 123-4567",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      street: "456 Park Avenue",
-      apartment: "Apt 3B",
-      city: "Brooklyn",
-      state: "NY",
-      zip: "11201",
-      country: "United States",
-      phone: "+1 (555) 987-6543",
-      isDefault: false,
-    },
-  ]);
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const [selectedAddress, setSelectedAddress] = useState(1);
+  const fetchAddresses = async () => {
+    try {
+      const response = await axios.get("/api/address/get-address", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+
+      const fetchedAddresses = response.data.data || [];
+
+      setAddresses(fetchedAddresses);
+      if (fetchedAddresses.length > 0) {
+        const defaultAddress = fetchedAddresses.find((addr) => addr.isDefault);
+        setSelectedAddress(defaultAddress?._id || fetchedAddresses[0]._id);
+      }
+    } catch (error) {
+      console.error("Failed to fetch addresses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAddresses();
+  }, []);
 
   const handleSelectAddress = (id) => {
     setSelectedAddress(id);
   };
 
-  const handleSetDefault = (id) => {
-    setAddresses(
-      addresses.map((addr) => ({
-        ...addr,
-        isDefault: addr.id === id,
-      }))
-    );
+  const handleSetDefault = async (id) => {
+    try {
+      const response = await axios.put(
+        `/api/address/set-default/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.data.success) {
+        fetchAddresses();
+      }
+    } catch (error) {
+      console.error("Failed to set default address:", error);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white p-6 text-center">
+        <p>Loading addresses...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
@@ -84,33 +106,35 @@ const AddressPage = () => {
             <p className="text-gray-400 mb-4">
               You haven't added any addresses yet.
             </p>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
-              Add New Address
-            </button>
+            <Link to="/create-address">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
+                Add New Address
+              </button>
+            </Link>
           </div>
         ) : (
           <div className="space-y-4">
             {addresses.map((address) => (
               <div
-                key={address.id}
+                key={address._id}
                 className={`border rounded-lg p-4 ${
-                  selectedAddress === address.id
+                  selectedAddress === address._id
                     ? "border-blue-500 bg-gray-900"
                     : "border-gray-700 bg-gray-800"
                 }`}
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-medium text-lg">{address.name}</h3>
+                    <h3 className="font-medium text-lg">{address.fullName}</h3>
                     <p className="text-gray-300">
-                      {address.street}
-                      {address.apartment && `, ${address.apartment}`}
+                      {address.addressLine1}
+                      {address.addressLine2 && `, ${address.addressLine2}`}
                       <br />
-                      {address.city}, {address.state} {address.zip}
+                      {address.city}, {address.state} {address.postalCode}
                       <br />
                       {address.country}
                     </p>
-                    <p className="text-gray-400 mt-2">{address.phone}</p>
+                    <p className="text-gray-400 mt-2">{address.phoneNumber}</p>
                   </div>
                   {address.isDefault && (
                     <span className="bg-green-900 text-green-300 text-xs px-2 py-1 rounded">
@@ -121,26 +145,31 @@ const AddressPage = () => {
 
                 <div className="flex justify-between mt-4">
                   <button
-                    onClick={() => handleSelectAddress(address.id)}
+                    onClick={() => handleSelectAddress(address._id)}
                     className={`px-4 py-2 rounded-md text-sm font-medium ${
-                      selectedAddress === address.id
+                      selectedAddress === address._id
                         ? "bg-blue-600 text-white"
                         : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                     }`}
                   >
-                    {selectedAddress === address.id ? "Selected" : "Select"}
+                    {selectedAddress === address._id ? "Selected" : "Select"}
                   </button>
 
-                  <div className="space-x-2">
+                  <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => handleSetDefault(address.id)}
+                      onClick={() => handleSetDefault(address._id)}
                       className="text-gray-400 hover:text-white text-sm font-medium"
                       disabled={address.isDefault}
                     >
                       {address.isDefault ? "Default" : "Set as Default"}
                     </button>
-                    <button className="text-gray-400 hover:text-white text-sm font-medium">
-                      Edit
+
+                    <button
+                      onClick={() => handleDeleteAddress(address._id)}
+                      className="text-red-500 hover:text-red-600"
+                      title="Delete"
+                    >
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </div>
