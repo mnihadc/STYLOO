@@ -3,7 +3,7 @@ import {
   FiHome,
   FiPlusSquare,
   FiShoppingBag,
-  FiHeart,
+  FiShoppingCart,
   FiUser,
   FiBarChart2, // for Sales
 } from "react-icons/fi";
@@ -49,10 +49,10 @@ const BottomHeader = () => {
             </button>
           </Link>
         ) : (
-          <Link to="/wishlist">
+          <Link to="/cart">
             <button className="flex flex-col items-center justify-center p-1.5 rounded-full hover:bg-gray-800 transition-all">
-              <FiHeart className="w-5 h-5" />
-              <span className="text-[10px] mt-1">Wishlist</span>
+              <FiShoppingCart className="w-5 h-5" />
+              <span className="text-[10px] mt-1">Cart</span>
             </button>
           </Link>
         )}
