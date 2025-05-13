@@ -27,9 +27,31 @@ const OrderSummaryPage = () => {
       setLoading(false);
     }
   };
+  const [address, setAddress] = useState(null);
+
+  const fetchDefaultAddress = async () => {
+    try {
+      const res = await fetch("/api/address/get-default-address", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setAddress(data.data);
+      } else {
+        setAddress(null); // No default address found
+      }
+    } catch (error) {
+      console.error("Error fetching address:", error);
+      setAddress(null);
+    }
+  };
 
   useEffect(() => {
     fetchCart();
+    fetchDefaultAddress();
   }, []);
 
   const subtotal = cartItems.reduce(
@@ -103,14 +125,42 @@ const OrderSummaryPage = () => {
           {/* Increased bottom padding */}
           {/* Delivery Address */}
           <div className="p-4 border-b border-gray-800">
-            <h2 className="text-lg font-bold mb-2">Delivery Address</h2>
-            <div className="bg-gray-900 rounded-lg p-3 border border-gray-800">
-              <p className="font-medium">John Doe</p>
-              <p className="text-sm text-gray-400">123, Main Street</p>
-              <p className="text-sm text-gray-400">Near Central Park</p>
-              <p className="text-sm text-gray-400">New York, NY 10001</p>
-              <p className="text-sm text-gray-400">Mobile: +1 9876543210</p>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-bold">Delivery Address</h2>
+              {address && (
+                <Link to="/address">
+                  <button className="text-blue-500 hover:underline text-sm">
+                    Change
+                  </button>
+                </Link>
+              )}
             </div>
+            {address ? (
+              <div className="bg-gray-900 rounded-lg p-3 border border-gray-800">
+                <p className="font-medium">{address.fullName}</p>
+                <p className="text-sm text-gray-400">{address.addressLine1}</p>
+                {address.addressLine2 && (
+                  <p className="text-sm text-gray-400">
+                    {address.addressLine2}
+                  </p>
+                )}
+                <p className="text-sm text-gray-400">
+                  {address.city}, {address.state} {address.postalCode}
+                </p>
+                <p className="text-sm text-gray-400">
+                  Mobile: {address.phoneNumber}
+                </p>
+              </div>
+            ) : (
+              <div className="bg-gray-900 rounded-lg p-3 border border-gray-800 text-center">
+                <p className="text-gray-400 mb-2">No delivery address found.</p>
+                <Link to="/address">
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-full font-medium">
+                    Add Address
+                  </button>
+                </Link>
+              </div>
+            )}
           </div>
           {/* Order Items */}
           <div className="p-4 border-b border-gray-800">
