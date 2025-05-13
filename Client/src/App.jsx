@@ -24,6 +24,7 @@ import ViewProductPage from "./Admin/ViewProduct";
 import OrderSummaryPage from "./Pages/OrderSummery";
 import AddressPage from "./Pages/Address";
 import AddressCreatePage from "./Pages/CreateAddress";
+import OrderSuccessPage from "./Components/OrderSuccessPage";
 
 function App() {
   return (
@@ -86,6 +87,7 @@ function App() {
             <Route path="/address" element={<AddressPage />} />
             <Route path="/create-address" element={<AddressCreatePage />} />
             <Route path="/order-summery" element={<OrderSummaryPage />} />
+            <Route path="/place-order-success" element={<OrderSuccessPage />} />
           </Route>
 
           <Route element={<AdminRoute />}>
