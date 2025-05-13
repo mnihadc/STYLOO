@@ -1,9 +1,13 @@
 import express from "express";
 import UserVerifyToken from "../Middleware/UserVerifyToken.js";
-import { placeCashOnDeliveryOrder } from "../Controller/Order.controller.js";
+import {
+  getOrders,
+  placeCashOnDeliveryOrder,
+} from "../Controller/Order.controller.js";
 
 const router = express.Router();
 
 router.post("/place-cod-order", UserVerifyToken, placeCashOnDeliveryOrder);
+router.get("/get-order", UserVerifyToken, getOrders);
 
 export default router;

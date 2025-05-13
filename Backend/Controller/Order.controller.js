@@ -62,3 +62,107 @@ export const placeCashOnDeliveryOrder = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+export const getOrders = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+
+    // Validate user ID
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid user ID" });
+    }
+
+    // Fetch orders sorted by createdAt in descending order
+    const orders = await Order.aggregate([
+      { $match: { user: mongoose.Types.ObjectId(userId) } },
+      { $sort: { createdAt: -1 } }, // -1 for descending
+      {
+        $lookup: {
+          from: "products",
+          localField: "products.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $project: {
+          orderId: 1,
+          createdAt: 1,
+          orderStatus: 1,
+          totalAmount: 1,
+          paymentMethod: 1,
+          shippingAddress: 1,
+          products: {
+            $map: {
+              input: "$products",
+              as: "product",
+              in: {
+                $mergeObjects: [
+                  "$$product",
+                  {
+                    productDetails: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$productDetails",
+                            as: "pd",
+                            cond: { $eq: ["$$pd._id", "$$product.product"] },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ]);
+
+    if (!orders || orders.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No orders found",
+        orders: [],
+      });
+    }
+
+    // Format the response to match your frontend structure
+    const formattedOrders = orders.map((order) => ({
+      id: `#${order.orderId.toString().slice(-6).toUpperCase()}`,
+      date: new Date(order.createdAt).toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+      status: order.orderStatus,
+      items: order.products.map((product) => ({
+        id: product.product._id,
+        name: product.productDetails.name,
+        price: product.productDetails.price,
+        image: product.productDetails.images[0] || "default-product-image.jpg",
+        quantity: product.quantity,
+      })),
+      total: order.totalAmount,
+      shippingAddress: order.shippingAddress,
+      paymentMethod:
+        order.paymentMethod === "upi"
+          ? `UPI (${order.paymentDetails?.upiId || "user@upi"})`
+          : `Credit Card (•••• •••• •••• ${
+              order.paymentDetails?.last4 || "4242"
+            })`,
+    }));
+
+    res.status(200).json({
+      success: true,
+      orders: formattedOrders,
+    });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    next(error);
+  }
+};
