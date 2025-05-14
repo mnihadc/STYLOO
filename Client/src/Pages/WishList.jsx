@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   FiHeart,
   FiShoppingCart,
   FiTrash2,
   FiChevronRight,
+  FiShoppingBag,
 } from "react-icons/fi";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -73,7 +75,24 @@ const WishlistPage = () => {
       }
     }
   };
+  const removeFromWishlist = async (productId) => {
+    try {
+      const res = await axios.delete(
+        `/api/wishlist/remove-wishlist/${productId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
 
+      setWishlistItems(res.data.products);
+      toast.success("Product removed from wishlist");
+    } catch (error) {
+      console.error("Failed to remove from wishlist", error);
+      toast.error("Failed to remove product from wishlist");
+    }
+  };
   useEffect(() => {
     fetchWishlist();
   }, []);
@@ -94,7 +113,23 @@ const WishlistPage = () => {
       {/* Wishlist Items */}
       <div className="p-4 space-y-4">
         {wishlistItems.length === 0 ? (
-          <p className="text-gray-400">Your wishlist is empty.</p>
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-40 h-40 bg-gray-800 rounded-full flex items-center justify-center mb-6">
+              <FiHeart className="text-6xl text-gray-500" />
+            </div>
+            <h3 className="text-2xl font-bold mb-2">Your wishlist is empty</h3>
+            <p className="text-gray-400 mb-6 text-center max-w-md">
+              You haven't added any items to your wishlist yet. Start exploring
+              our collection!
+            </p>
+            <Link
+              to="/"
+              className="bg-yellow-500 hover:bg-yellow-600 text-black font-medium px-6 py-3 rounded-lg flex items-center transition-colors"
+            >
+              <FiShoppingBag className="mr-2" />
+              Start Shopping
+            </Link>
+          </div>
         ) : (
           wishlistItems.map((item, index) => (
             <div
@@ -139,7 +174,10 @@ const WishlistPage = () => {
 
                   {/* Action Buttons */}
                   <div className="flex justify-between mt-3">
-                    <button className="text-red-500 flex items-center text-sm">
+                    <button
+                      className="text-red-500 flex items-center text-sm"
+                      onClick={() => removeFromWishlist(item.productId._id)}
+                    >
                       <FiTrash2 className="mr-1" /> Remove
                     </button>
                     <button
