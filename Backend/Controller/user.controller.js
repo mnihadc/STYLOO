@@ -44,3 +44,46 @@ export const GetProfileUser = async (req, res) => {
     });
   }
 };
+
+export const updateUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // 1. Find and update User (username, avatar)
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Optionally check for username uniqueness if allowing change
+    if (req.body.username && req.body.username !== user.username) {
+      const existing = await User.findOne({ username: req.body.username });
+      if (existing) {
+        return res.status(400).json({ message: "Username already taken" });
+      }
+      user.username = req.body.username;
+    }
+
+    user.avatar = req.body.avatar || user.avatar;
+    await user.save();
+
+    // 2. Find or create ProfileUser (tagline, bio)
+    let profile = await ProfileUser.findOne({ userId });
+    if (!profile) {
+      profile = new ProfileUser({ userId });
+    }
+
+    profile.tagline = req.body.tagline || profile.tagline;
+    profile.bio = req.body.bio || profile.bio;
+    await profile.save();
+
+    // 3. Return combined updated profile
+    res.status(200).json({
+      username: user.username,
+      avatar: user.avatar,
+      tagline: profile.tagline,
+      bio: profile.bio,
+    });
+  } catch (err) {
+    console.error("Update profile error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
