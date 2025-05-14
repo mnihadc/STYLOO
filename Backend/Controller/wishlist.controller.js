@@ -1,18 +1,18 @@
-import Wishlist from "../Model/WishList.model.js";
+import WishList from "../Model/WishList.model.js";
 
 export const addToWishList = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const { productId } = req.body; 
+    const { productId } = req.body;
 
     if (!productId) {
       return res.status(400).json({ message: "Product ID is required" });
     }
 
-    let wishlist = await Wishlist.findOne({ userId });
+    let wishlist = await WishList.findOne({ userId });
 
     if (!wishlist) {
-      wishlist = new Wishlist({
+      wishlist = new WishList({
         userId,
         products: [{ productId }],
       });
@@ -30,6 +30,24 @@ export const addToWishList = async (req, res, next) => {
 
     await wishlist.save();
     res.status(200).json({ message: "Added to wishlist", wishlist });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getWishList = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+
+    const wishlist = await WishList.findOne({ userId })
+      .populate("products.productId", "name price image rating discount")
+      .exec();
+
+    if (!wishlist) {
+      return res.status(200).json({ products: [] });
+    }
+
+    res.status(200).json({ products: wishlist.products });
   } catch (error) {
     next(error);
   }
