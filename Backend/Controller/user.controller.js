@@ -23,6 +23,7 @@ export const GetProfileUser = async (req, res) => {
       role: user.role,
       tagline: profile?.tagline || "",
       bio: profile?.bio || "",
+      name: profile?.name || "",
       followers: profile?.followers?.count || 0,
       following: profile?.following?.count || 0,
       posts: profile?.posts?.count || 0,
@@ -49,41 +50,54 @@ export const updateUserProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    // 1. Find and update User (username, avatar)
+    const { username, avatar, name, tagline, bio } = req.body;
+
+    // 1. Update the User model
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Optionally check for username uniqueness if allowing change
-    if (req.body.username && req.body.username !== user.username) {
-      const existing = await User.findOne({ username: req.body.username });
-      if (existing) {
+    if (username && username !== user.username) {
+      const existing = await User.findOne({ username });
+      if (existing && existing._id.toString() !== userId) {
         return res.status(400).json({ message: "Username already taken" });
       }
-      user.username = req.body.username;
+      user.username = username;
     }
 
-    user.avatar = req.body.avatar || user.avatar;
+    if (avatar) {
+      user.avatar = avatar;
+    }
+
     await user.save();
 
-    // 2. Find or create ProfileUser (tagline, bio)
+    // 2. Update the ProfileUser model
     let profile = await ProfileUser.findOne({ userId });
     if (!profile) {
       profile = new ProfileUser({ userId });
     }
 
-    profile.tagline = req.body.tagline || profile.tagline;
-    profile.bio = req.body.bio || profile.bio;
+    profile.name = name || profile.name;
+    profile.tagline = tagline || profile.tagline;
+    profile.bio = bio || profile.bio;
+
     await profile.save();
 
-    // 3. Return combined updated profile
-    res.status(200).json({
-      username: user.username,
-      avatar: user.avatar,
-      tagline: profile.tagline,
-      bio: profile.bio,
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      user: {
+        username: user.username,
+        avatar: user.avatar,
+      },
+      profile: {
+        name: profile.name,
+        tagline: profile.tagline,
+        bio: profile.bio,
+      },
     });
   } catch (err) {
     console.error("Update profile error:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: err.message });
   }
 };

@@ -20,7 +20,10 @@ const userProfileSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    name: String,
+    name: {
+      type: String,
+      maxlength: 50,
+    },
     tagline: String,
     bio: String,
     followers: {
