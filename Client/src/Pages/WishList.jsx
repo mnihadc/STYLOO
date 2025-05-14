@@ -6,7 +6,7 @@ import {
   FiChevronRight,
 } from "react-icons/fi";
 import axios from "axios";
-
+import { toast } from "react-hot-toast";
 const WishlistPage = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +23,54 @@ const WishlistPage = () => {
       console.error("Failed to fetch wishlist", error);
     } finally {
       setLoading(false);
+    }
+  };
+  const handleAddToCart = async (productId) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const res = await axios.post(
+        "/api/cart/addtocart",
+        {
+          productId,
+          quantity: 1,
+          selectedSize: "M",
+          selectedColor: "Black",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("✅ Product added to cart!");
+    } catch (err) {
+      const status = err.response?.status;
+      const message = err.response?.data?.message || "Something went wrong";
+
+      if (status === 409) {
+        toast("⚠️ Product already in cart!", {
+          icon: "🛒",
+          style: {
+            background: "#1f2937",
+            color: "#fff",
+            border: "1px solid #f59e0b",
+          },
+        });
+      } else if (status === 403) {
+        toast.error(`⛔ ${message}`, {
+          style: {
+            background: "#1f2937",
+            color: "#fff",
+            border: "1px solid #ef4444",
+          },
+        });
+      } else if (status === 401) {
+        toast.error("🔒 Please login first!");
+      } else {
+        console.error("Add to cart error:", err);
+        toast.error("❌ Failed to add to cart.");
+      }
     }
   };
 
@@ -94,7 +142,10 @@ const WishlistPage = () => {
                     <button className="text-red-500 flex items-center text-sm">
                       <FiTrash2 className="mr-1" /> Remove
                     </button>
-                    <button className="bg-yellow-500 text-black px-3 py-1 rounded-md text-sm font-medium flex items-center">
+                    <button
+                      onClick={() => handleAddToCart(item.productId._id)}
+                      className="bg-yellow-500 text-black px-3 py-1 rounded-md text-sm font-medium flex items-center"
+                    >
                       <FiShoppingCart className="mr-1" /> Add to Cart
                     </button>
                   </div>
