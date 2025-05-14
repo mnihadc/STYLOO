@@ -8,6 +8,7 @@ import {
   FiHelpCircle,
   FiLogOut,
 } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 export default function SettingsPage() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -33,9 +34,11 @@ export default function SettingsPage() {
             <p className="text-gray-400 text-sm">Premium Member</p>
           </div>
         </div>
-        <button className="w-full py-2 border border-gray-700 rounded-lg text-purple-400 font-medium">
-          Edit Profile
-        </button>
+        <Link to="/edit-profile">
+          <button className="w-full py-2 border border-gray-700 rounded-lg text-purple-400 font-medium">
+            Edit Profile
+          </button>
+        </Link>
       </section>
 
       {/* Settings Options */}
