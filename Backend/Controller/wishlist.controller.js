@@ -52,3 +52,47 @@ export const getWishList = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteWishList = async (req, res, next) => {
+  try {
+    const { productId } = req.params; // or req.body if using body params
+    const userId = req.user.userId;
+
+    // Validate productId
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
+
+    const wishlist = await WishList.findOneAndUpdate(
+      { userId: userId }, // Changed to match schema
+      { $pull: { products: { productId: productId } } }, // More explicit
+      { new: true }
+    ).populate("products.productId");
+
+    if (!wishlist) {
+      return res.status(404).json({ message: "Wishlist not found" });
+    }
+
+    // Check if product was actually removed
+    const wasRemoved = !wishlist.products.some(
+      (item) => item.productId._id.toString() === productId
+    );
+
+    if (!wasRemoved) {
+      return res.status(404).json({ message: "Product not found in wishlist" });
+    }
+
+    res.json({
+      success: true,
+      message: "Product removed from wishlist",
+      products: wishlist.products,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
