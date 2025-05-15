@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FiUser,
   FiLock,
@@ -9,12 +9,30 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 export default function SettingsPage() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
+  const [userName, setUserName] = useState("Loading...");
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const res = await axios.get("/api/user/profile-user", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setUserName(res.data.name || "No Name");
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+        setUserName("Error");
+      }
+    };
 
+    fetchUserProfile();
+  }, []);
   return (
     <div className="min-h-screen bg-black text-white p-4">
       {/* Header */}
@@ -27,10 +45,10 @@ export default function SettingsPage() {
       <section className="mb-6">
         <div className="flex items-center mb-4">
           <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center mr-3">
-            <span className="text-xl">JD</span>
+            <span className="text-xl">{userName?.charAt(0) || "U"}</span>
           </div>
           <div>
-            <h2 className="font-semibold">John Doe</h2>
+            <h2 className="font-semibold">{userName}</h2>
             <p className="text-gray-400 text-sm">Premium Member</p>
           </div>
         </div>
