@@ -1,157 +1,61 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FiSearch, FiMoreVertical, FiVideo, FiSend } from "react-icons/fi";
 import { BsCheck2All, BsThreeDots, BsFilter } from "react-icons/bs";
 import { IoMdSend } from "react-icons/io";
 import { Link } from "react-router-dom";
+import axios from "axios";
+
 const ChatPage = () => {
+  const [users, setUsers] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [newMessage, setNewMessage] = useState("");
+  const [messages, setMessages] = useState({});
 
-  const recentChats = [
-    {
-      id: 1,
-      username: "john_doe",
-      name: "John Doe",
-      avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-      lastMessage: "Hey, are we still meeting tomorrow?",
-      time: "2h ago",
-      unread: 3,
-      online: true,
-    },
-    {
-      id: 2,
-      username: "alex_wilson",
-      name: "Alex Wilson",
-      avatar: "https://randomuser.me/api/portraits/men/2.jpg",
-      lastMessage: "Sent you those files 📁",
-      time: "5h ago",
-      unread: 0,
-      online: false,
-    },
-    {
-      id: 3,
-      username: "sarah_smith",
-      name: "Sarah Smith",
-      avatar: "https://randomuser.me/api/portraits/women/1.jpg",
-      lastMessage: "The party was amazing!",
-      time: "1d ago",
-      unread: 1,
-      online: true,
-    },
-    {
-      id: 4,
-      username: "mike_johnson",
-      name: "Mike Johnson",
-      avatar: "https://randomuser.me/api/portraits/men/3.jpg",
-      lastMessage: "Thanks for the help!",
-      time: "2d ago",
-      unread: 0,
-      online: false,
-    },
-    {
-      id: 5,
-      username: "emily_clark",
-      name: "Emily Clark",
-      avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-      lastMessage: "Check out this reel 👀",
-      time: "3d ago",
-      unread: 0,
-      online: true,
-    },
-  ];
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-  const messages = {
-    1: [
-      {
-        id: 1,
-        sender: "them",
-        text: "Hey, how are you doing?",
-        time: "10:30 AM",
-        read: true,
-      },
-      {
-        id: 2,
-        sender: "me",
-        text: "I'm good! Just working on some projects.",
-        time: "10:32 AM",
-        read: true,
-      },
-      {
-        id: 3,
-        sender: "them",
-        text: "Are we still meeting tomorrow?",
-        time: "2:15 PM",
-        read: true,
-      },
-      {
-        id: 4,
-        sender: "me",
-        text: "Yes, at the coffee shop at 3pm",
-        time: "2:17 PM",
-        read: true,
-      },
-      {
-        id: 5,
-        sender: "them",
-        text: "Perfect! See you then",
-        time: "2:18 PM",
-        read: false,
-      },
-    ],
-    2: [
-      {
-        id: 1,
-        sender: "them",
-        text: "I sent you those files we discussed",
-        time: "9:45 AM",
-        read: true,
-      },
-      {
-        id: 2,
-        sender: "me",
-        text: "Got them, thanks!",
-        time: "10:00 AM",
-        read: true,
-      },
-      {
-        id: 3,
-        sender: "them",
-        text: "Let me know if you need anything else",
-        time: "10:01 AM",
-        read: true,
-      },
-    ],
-    3: [
-      {
-        id: 1,
-        sender: "them",
-        text: "The party was amazing last night!",
-        time: "11:30 PM",
-        read: true,
-      },
-      {
-        id: 2,
-        sender: "me",
-        text: "Right? We should do it again soon",
-        time: "11:32 PM",
-        read: true,
-      },
-      {
-        id: 3,
-        sender: "them",
-        text: "Definitely! Next weekend?",
-        time: "11:33 PM",
-        read: false,
-      },
-    ],
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get("/api/user/get-users-chat");
+      const usersWithMockData = res.data.map((user, idx) => ({
+        ...user,
+        id: user._id,
+        avatar: `https://randomuser.me/api/portraits/${
+          idx % 2 === 0 ? "men" : "women"
+        }/${idx + 1}.jpg`,
+        lastMessage: "Hello! Let's chat ✨",
+        time: "Now",
+        unread: Math.random() > 0.7 ? Math.floor(Math.random() * 5) + 1 : 0,
+        online: Math.random() > 0.5,
+      }));
+
+      setUsers(usersWithMockData);
+
+      const dummyMessages = {};
+      usersWithMockData.forEach((user) => {
+        dummyMessages[user._id] = [
+          {
+            id: 1,
+            sender: "them",
+            text: `Hey ${user.username}, welcome to Styloo!`,
+            time: "10:00 AM",
+            read: true,
+          },
+        ];
+      });
+      setMessages(dummyMessages);
+    } catch (err) {
+      console.error("Failed to fetch users", err);
+    }
   };
 
   const handleSend = () => {
-    if (newMessage.trim() === "" || !activeChat) return;
+    if (!newMessage.trim() || !activeChat) return;
 
     const newMsg = {
-      id: messages[activeChat.id].length + 1,
+      id: messages[activeChat.id]?.length + 1 || 1,
       sender: "me",
       text: newMessage,
       time: new Date().toLocaleTimeString([], {
@@ -161,18 +65,18 @@ const ChatPage = () => {
       read: false,
     };
 
-    const updatedMessages = {
-      ...messages,
-      [activeChat.id]: [...messages[activeChat.id], newMsg],
-    };
+    setMessages((prev) => ({
+      ...prev,
+      [activeChat.id]: [...(prev[activeChat.id] || []), newMsg],
+    }));
 
     setNewMessage("");
   };
 
-  const filteredChats = recentChats.filter(
-    (chat) =>
-      chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      chat.username.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredChats = users.filter(
+    (user) =>
+      user.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -192,7 +96,7 @@ const ChatPage = () => {
         </div>
       </div>
 
-      {/* Search Bar */}
+      {/* Search */}
       <div className="p-3 border-b border-gray-800">
         <div className="relative">
           <FiSearch className="absolute left-3 top-3 text-gray-400" />
@@ -206,10 +110,10 @@ const ChatPage = () => {
         </div>
       </div>
 
+      {/* Active Chat */}
       {activeChat ? (
-        /* Active Chat View */
         <>
-          {/* Chat header */}
+          {/* Chat Header */}
           <Link to="/chat">
             <div className="flex items-center justify-between p-3 border-b border-gray-800">
               <div className="flex items-center">
@@ -231,7 +135,7 @@ const ChatPage = () => {
                 </button>
                 <img
                   src={activeChat.avatar}
-                  alt={activeChat.name}
+                  alt={activeChat.username}
                   className="w-8 h-8 rounded-full object-cover"
                 />
                 <div className="ml-3">
@@ -251,29 +155,28 @@ const ChatPage = () => {
               </div>
             </div>
           </Link>
-          {/* Messages area */}
+
+          {/* Message Area */}
           <div className="flex-1 p-4 overflow-y-auto bg-gray-900 bg-opacity-50">
-            {messages[activeChat.id]?.map((message) => (
+            {messages[activeChat.id]?.map((msg) => (
               <div
-                key={message.id}
+                key={msg.id}
                 className={`flex mb-4 ${
-                  message.sender === "me" ? "justify-end" : "justify-start"
+                  msg.sender === "me" ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
                   className={`max-w-xs rounded-lg p-3 ${
-                    message.sender === "me" ? "bg-blue-600" : "bg-gray-800"
+                    msg.sender === "me" ? "bg-blue-600" : "bg-gray-800"
                   }`}
                 >
-                  <p>{message.text}</p>
+                  <p>{msg.text}</p>
                   <div className="flex items-center justify-end mt-1 space-x-1">
-                    <span className="text-xs text-gray-300">
-                      {message.time}
-                    </span>
-                    {message.sender === "me" && (
+                    <span className="text-xs text-gray-300">{msg.time}</span>
+                    {msg.sender === "me" && (
                       <BsCheck2All
                         className={`text-xs ${
-                          message.read ? "text-blue-300" : "text-gray-400"
+                          msg.read ? "text-blue-300" : "text-gray-400"
                         }`}
                       />
                     )}
@@ -283,7 +186,7 @@ const ChatPage = () => {
             ))}
           </div>
 
-          {/* Message input */}
+          {/* Input */}
           <div className="p-3 border-t border-gray-800">
             <div className="flex items-center">
               <input
@@ -292,7 +195,7 @@ const ChatPage = () => {
                 className="flex-1 bg-gray-800 rounded-full py-2 px-4 mx-2 focus:outline-none"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSend()}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
               />
               <button
                 className="p-2 text-xl text-blue-500"
@@ -304,39 +207,39 @@ const ChatPage = () => {
           </div>
         </>
       ) : (
-        /* Chat List View */
+        // Chat List View
         <div className="flex-1 overflow-y-auto">
-          {filteredChats.map((chat) => (
+          {filteredChats.map((user) => (
             <div
-              key={chat.id}
+              key={user._id}
               className="flex items-center p-3 hover:bg-gray-900 cursor-pointer border-b border-gray-800"
-              onClick={() => setActiveChat(chat)}
+              onClick={() => setActiveChat(user)}
             >
               <div className="relative">
                 <img
-                  src={chat.avatar}
-                  alt={chat.name}
+                  src={user.avatar}
+                  alt={user.username}
                   className="w-12 h-12 rounded-full object-cover"
                 />
-                {chat.online && (
+                {user.online && (
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-black"></div>
                 )}
-                {chat.unread > 0 && (
+                {user.unread > 0 && (
                   <div className="absolute -top-1 -right-1 bg-red-500 rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                    {chat.unread}
+                    {user.unread}
                   </div>
                 )}
               </div>
               <div className="ml-3 flex-1">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-semibold">{chat.username}</h3>
-                  <span className="text-xs text-gray-400">{chat.time}</span>
+                  <h3 className="font-semibold">{user.username}</h3>
+                  <span className="text-xs text-gray-400">{user.time}</span>
                 </div>
                 <div className="flex items-center">
                   <p className="text-sm text-gray-400 truncate flex-1">
-                    {chat.lastMessage}
+                    {user.lastMessage}
                   </p>
-                  {chat.unread > 0 && (
+                  {user.unread > 0 && (
                     <div className="ml-2 w-2 h-2 bg-blue-500 rounded-full"></div>
                   )}
                 </div>

@@ -101,3 +101,12 @@ export const updateUserProfile = async (req, res) => {
       .json({ message: "Server error", error: err.message });
   }
 };
+
+export const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await User.find().select("-password");
+    res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
