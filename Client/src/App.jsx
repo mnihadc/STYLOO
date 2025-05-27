@@ -1,4 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { initSocket } from "./lib/socket";
 import Header from "./Components/Header";
 import BottomHeader from "./Components/BottomHeader";
 import Post from "./Pages/Post";
@@ -28,6 +31,14 @@ import OrderSuccessPage from "./Components/OrderSuccessPage";
 import EditProfilePage from "./Components/EditProfile";
 
 function App() {
+  const currentUser = useSelector((state) => state.user.currentUser); // Redux example
+
+  useEffect(() => {
+    if (currentUser?._id) {
+      initSocket(currentUser._id);
+    }
+  }, [currentUser]);
+
   return (
     <BrowserRouter>
       <Header />

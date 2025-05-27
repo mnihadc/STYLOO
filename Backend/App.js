@@ -2,19 +2,20 @@ import express from "express";
 import dotenv from "dotenv";
 import path from "path";
 import mongoose from "mongoose";
-import authRoutes from "./Route/auth.route.js"; // ⬅️ Import the auth routes
+// ⬅️ Import the auth routes
+import authRoutes from "./Route/auth.route.js";
 import userRoutes from "./Route/user.route.js";
 import adminRoutes from "./Route/admin.route.js";
 import cartRoutes from "./Route/cart.route.js";
 import addressRoutes from "./Route/address.route.js";
 import orderRoutes from "./Route/order.route.js";
 import wishlistRoutes from "./Route/wishlist.route.js";
-
+import messageRoutes from "./Route/message.route.js";
+import { app, server } from "./Utils/socket.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 dotenv.config();
 const __dirname = path.resolve();
-const app = express();
 
 // Middleware
 app.use(express.json());
@@ -38,6 +39,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/message", messageRoutes);
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI, {
@@ -52,6 +54,6 @@ mongoose
 
 // Start server
 const port = process.env.PORT;
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is Running on port ${port}!!!`);
 });

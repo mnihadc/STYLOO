@@ -9,6 +9,6 @@ const router = express.Router();
 
 router.get("/profile-user", UserVerifyToken, GetProfileUser);
 router.put("/update-profile", UserVerifyToken, updateUserProfile);
-router.get("/get-users-chat", getAllUsers);
+router.get("/get-users-chat", UserVerifyToken, getAllUsers);
 
 export default router;

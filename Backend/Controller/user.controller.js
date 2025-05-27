@@ -104,7 +104,11 @@ export const updateUserProfile = async (req, res) => {
 
 export const getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find().select("-password");
+    const userId = req.user.userId;
+
+    // Exclude the logged-in user
+    const users = await User.find({ _id: { $ne: userId } }).select("-password");
+
     res.status(200).json(users);
   } catch (error) {
     next(error);
