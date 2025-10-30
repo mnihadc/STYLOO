@@ -178,14 +178,36 @@ const Header = () => {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-black bg-opacity-90 backdrop-blur-sm border-b border-gray-800">
         <div className="w-full mx-auto px-4 py-3 flex items-center justify-between max-w-7xl">
+          {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
-            className="text-white p-2 rounded-full hover:bg-gray-800"
+            className="text-white p-2 rounded-full hover:bg-gray-800 lg:hidden"
           >
             {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
 
-          <div className="flex-1 text-center px-2">
+          {/* Desktop Navigation - Left Side */}
+          <div className="hidden lg:flex lg:items-center lg:space-x-6">
+            {currentUser && currentUser.role !== "admin" && (
+              <>
+                <Link
+                  to="/cart"
+                  className="text-white p-2 rounded-full hover:bg-gray-800 transition-colors"
+                >
+                  <FiShoppingCart size={20} />
+                </Link>
+                <Link
+                  to="/wishlist"
+                  className="text-white p-2 rounded-full hover:bg-gray-800 transition-colors"
+                >
+                  <FiHeart size={20} />
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Logo */}
+          <div className="flex-1 text-center px-2 lg:flex-none">
             <Link to="/">
               <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
                 <span className="rotate-text bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">
@@ -195,15 +217,66 @@ const Header = () => {
             </Link>
           </div>
 
+          {/* Desktop Navigation - Right Side */}
+          <div className="hidden lg:flex lg:items-center lg:space-x-4">
+            <Link
+              to="/chatpage"
+              className="text-white p-2 rounded-full hover:bg-gray-800 transition-colors"
+            >
+              <FiMessageSquare size={20} />
+            </Link>
+
+            {/* Desktop User Menu */}
+            <div className="relative menu-container">
+              <button className="text-white p-2 rounded-full hover:bg-gray-800 transition-colors">
+                <FiUser size={20} />
+              </button>
+
+              {/* Desktop Dropdown Menu */}
+              <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl py-2 opacity-0 invisible transition-all duration-300 transform translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0">
+                <nav>
+                  <ul className="space-y-1">
+                    {menuItems.map((item, index) => (
+                      <li key={index}>
+                        {item.link ? (
+                          <Link
+                            to={item.link}
+                            className={`flex items-center px-4 py-3 hover:bg-gray-800 ${item.color} transition-colors`}
+                          >
+                            <span className="mr-3">{item.icon}</span>
+                            <span className="font-medium">{item.text}</span>
+                          </Link>
+                        ) : (
+                          <button
+                            onClick={item.onClick}
+                            className={`flex w-full items-center px-4 py-3 hover:bg-gray-800 ${item.color} transition-colors text-left`}
+                          >
+                            <span className="mr-3">{item.icon}</span>
+                            <span className="font-medium">{item.text}</span>
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+                <div className="border-t border-gray-800 text-sm text-gray-400 px-4 py-2 mt-2">
+                  STYLOO v1.0.0
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Chat Button */}
           <Link
             to="/chatpage"
-            className="text-white p-2 rounded-full hover:bg-gray-800"
+            className="text-white p-2 rounded-full hover:bg-gray-800 lg:hidden"
           >
             <FiMessageSquare size={24} />
           </Link>
 
+          {/* Mobile Sidebar Menu */}
           <div
-            className={`fixed top-0 left-0 h-screen w-64 bg-gray-900 shadow-2xl z-40 transition-transform menu-container border-r border-gray-800 ${
+            className={`fixed top-0 left-0 h-screen w-64 bg-gray-900 shadow-2xl z-40 transition-transform menu-container border-r border-gray-800 lg:hidden ${
               isMenuOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
@@ -251,7 +324,7 @@ const Header = () => {
 
           {isMenuOpen && (
             <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-30"
+              className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
               onClick={toggleMenu}
             />
           )}
