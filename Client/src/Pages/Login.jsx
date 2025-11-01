@@ -49,38 +49,43 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-gray-900 rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-center mb-6">Welcome Back</h2>
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 lg:p-8">
+      <div className="w-full max-w-md lg:max-w-lg xl:max-w-xl bg-gray-900 rounded-lg lg:rounded-xl shadow-lg p-8 lg:p-10 xl:p-12">
+        <h2 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-center mb-6 lg:mb-8">
+          Welcome Back
+        </h2>
 
         {/* Social Login Buttons */}
-        <div className="flex flex-col space-y-4 mb-6">
+        <div className="flex flex-col space-y-4 lg:space-y-5 mb-6 lg:mb-8">
           <button
             type="button"
-            className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition"
+            className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white py-2 lg:py-3 px-4 rounded-md lg:rounded-lg transition text-sm lg:text-base xl:text-lg"
           >
-            <FaFacebook className="mr-2" />
+            <FaFacebook className="mr-2 lg:mr-3 text-sm lg:text-base xl:text-lg" />
             Continue with Facebook
           </button>
           <button
             type="button"
-            className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition"
+            className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-2 lg:py-3 px-4 rounded-md lg:rounded-lg transition text-sm lg:text-base xl:text-lg"
           >
-            <FaGoogle className="mr-2" />
+            <FaGoogle className="mr-2 lg:mr-3 text-sm lg:text-base xl:text-lg" />
             Continue with Google
           </button>
         </div>
 
-        <div className="flex items-center my-6">
+        <div className="flex items-center my-6 lg:my-8">
           <div className="flex-grow border-t border-gray-700"></div>
-          <span className="mx-4 text-gray-400">OR</span>
+          <span className="mx-4 text-gray-400 text-sm lg:text-base">OR</span>
           <div className="flex-grow border-t border-gray-700"></div>
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm lg:text-base font-medium mb-1 lg:mb-2"
+            >
               Email or Username
             </label>
             <input
@@ -89,7 +94,7 @@ const LoginPage = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="w-full bg-gray-800 border border-gray-700 rounded-md lg:rounded-lg py-2 lg:py-3 px-3 lg:px-4 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm lg:text-base"
               placeholder="Enter your email or username"
               autoComplete="username"
               required
@@ -99,7 +104,7 @@ const LoginPage = () => {
           <div className="relative">
             <label
               htmlFor="password"
-              className="block text-sm font-medium mb-1"
+              className="block text-sm lg:text-base font-medium mb-1 lg:mb-2"
             >
               Password
             </label>
@@ -109,14 +114,14 @@ const LoginPage = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="w-full bg-gray-800 border border-gray-700 rounded-md lg:rounded-lg py-2 lg:py-3 px-3 lg:px-4 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm lg:text-base"
               placeholder="Enter your password"
               autoComplete="current-password"
               required
             />
             <button
               type="button"
-              className="absolute right-3 top-8 text-gray-400 hover:text-white"
+              className="absolute right-3 lg:right-4 top-8 lg:top-10 text-gray-400 hover:text-white text-sm lg:text-base"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -130,15 +135,18 @@ const LoginPage = () => {
                 id="remember"
                 checked={rememberMe}
                 onChange={() => setRememberMe(!rememberMe)}
-                className="h-4 w-4 text-pink-500 focus:ring-pink-500 border-gray-700 rounded"
+                className="h-4 w-4 lg:h-5 lg:w-5 text-pink-500 focus:ring-pink-500 border-gray-700 rounded"
               />
-              <label htmlFor="remember" className="ml-2 text-sm text-gray-400">
+              <label
+                htmlFor="remember"
+                className="ml-2 text-sm lg:text-base text-gray-400"
+              >
                 Remember me
               </label>
             </div>
             <Link
               to="/forgot-password"
-              className="text-sm text-pink-500 hover:underline"
+              className="text-sm lg:text-base text-pink-500 hover:underline"
             >
               Forgot password?
             </Link>
@@ -147,7 +155,7 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full bg-gradient-to-r from-pink-500 to-yellow-500 hover:from-pink-600 hover:to-yellow-600 text-white py-2 px-4 rounded-md font-medium transition duration-300 ${
+            className={`w-full bg-gradient-to-r from-pink-500 to-yellow-500 hover:from-pink-600 hover:to-yellow-600 text-white py-2 lg:py-3 px-4 rounded-md lg:rounded-lg font-medium transition duration-300 text-sm lg:text-base xl:text-lg ${
               loading ? "opacity-70 cursor-not-allowed" : ""
             }`}
           >
@@ -155,7 +163,7 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-400">
+        <div className="mt-6 lg:mt-8 text-center text-sm lg:text-base text-gray-400">
           Don't have an account?{" "}
           <Link
             to="/signup"
@@ -166,7 +174,7 @@ const LoginPage = () => {
         </div>
       </div>
 
-      <div className="mt-8 text-center text-xs text-gray-500">
+      <div className="mt-8 lg:mt-10 text-center text-xs lg:text-sm text-gray-500">
         <p>© 2023 SocialShop. All rights reserved.</p>
       </div>
     </div>

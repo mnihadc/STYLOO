@@ -117,126 +117,141 @@ const HelpCenter = () => {
     .filter((category) => category.questions.length > 0);
 
   return (
-    <div className="bg-black text-white min-h-screen pb-20">
+    <div className="bg-black text-white min-h-screen pb-20 lg:pb-0">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-black p-4 border-b border-gray-800">
-        <h1 className="text-xl font-bold">Help Center</h1>
+      <div className="sticky top-0 z-10 bg-black p-4 border-b border-gray-800 lg:px-8 lg:py-6">
+        <h1 className="text-xl font-bold lg:text-3xl">Help Center</h1>
       </div>
 
-      {/* Search */}
-      <div className="p-4">
-        <div className="relative">
-          <FiSearch className="absolute left-3 top-3 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search help articles..."
-            className="w-full bg-gray-900 rounded-lg py-2 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      {/* Main Content Container */}
+      <div className="lg:flex lg:max-w-7xl lg:mx-auto lg:gap-8 lg:p-8">
+        {/* Left Side - Search & Popular Topics */}
+        <div className="lg:w-1/3 lg:max-w-md">
+          {/* Search */}
+          <div className="p-4 lg:p-0 lg:mb-8">
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-3 text-gray-400 lg:w-5 lg:h-5" />
+              <input
+                type="text"
+                placeholder="Search help articles..."
+                className="w-full bg-gray-900 rounded-lg py-2 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-blue-500 lg:py-3 lg:text-lg"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Popular Topics */}
+          <div className="p-4 lg:p-0 lg:mb-8">
+            <h2 className="text-lg font-bold mb-4 lg:text-xl">
+              Popular Topics
+            </h2>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:gap-4">
+              <button className="bg-gray-900 hover:bg-gray-800 p-3 rounded-lg flex items-center lg:p-4 lg:text-lg">
+                <FiShoppingBag className="mr-2 lg:w-5 lg:h-5" />
+                <span>Order Issues</span>
+              </button>
+              <button className="bg-gray-900 hover:bg-gray-800 p-3 rounded-lg flex items-center lg:p-4 lg:text-lg">
+                <FiMessageSquare className="mr-2 lg:w-5 lg:h-5" />
+                <span>Posting Help</span>
+              </button>
+              <button className="bg-gray-900 hover:bg-gray-800 p-3 rounded-lg flex items-center lg:p-4 lg:text-lg">
+                <FiUsers className="mr-2 lg:w-5 lg:h-5" />
+                <span>Account Security</span>
+              </button>
+              <button className="bg-gray-900 hover:bg-gray-800 p-3 rounded-lg flex items-center lg:p-4 lg:text-lg">
+                <FiMail className="mr-2 lg:w-5 lg:h-5" />
+                <span>Contact Support</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - FAQ Sections */}
+        <div className="lg:flex-1">
+          <div className="p-4 lg:p-0">
+            {filteredCategories.length === 0 ? (
+              <div className="text-center py-10 lg:py-16">
+                <p className="text-gray-400 lg:text-lg">
+                  No results found for "{searchQuery}"
+                </p>
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="mt-4 text-blue-500 hover:underline lg:text-lg"
+                >
+                  Clear search
+                </button>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-lg font-bold mb-4 lg:text-xl lg:mb-6">
+                  Help Articles
+                </h2>
+                <div className="space-y-3 lg:space-y-4">
+                  {filteredCategories.map((category) => (
+                    <div
+                      key={category.id}
+                      className="bg-gray-900 rounded-lg overflow-hidden lg:rounded-xl"
+                    >
+                      <button
+                        onClick={() => toggleCategory(category.id)}
+                        className="w-full p-4 flex justify-between items-center hover:bg-gray-800 lg:p-6"
+                      >
+                        <div className="flex items-center lg:text-lg">
+                          {category.icon}
+                          <span>{category.title}</span>
+                        </div>
+                        {activeCategory === category.id ? (
+                          <FiChevronDown className="text-gray-400 lg:w-5 lg:h-5" />
+                        ) : (
+                          <FiChevronRight className="text-gray-400 lg:w-5 lg:h-5" />
+                        )}
+                      </button>
+
+                      {activeCategory === category.id && (
+                        <div className="px-4 pb-4 space-y-4 lg:px-6 lg:pb-6 lg:space-y-6">
+                          {category.questions.map((item, index) => (
+                            <div
+                              key={index}
+                              className="pt-3 border-t border-gray-800 first:border-t-0 lg:pt-4"
+                            >
+                              <h3 className="font-medium lg:text-lg">
+                                {item.question}
+                              </h3>
+                              <p className="text-gray-400 mt-1 text-sm lg:text-base lg:mt-2">
+                                {item.answer}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="p-4">
-        {filteredCategories.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-gray-400">
-              No results found for "{searchQuery}"
-            </p>
-            <button
-              onClick={() => setSearchQuery("")}
-              className="mt-4 text-blue-500 hover:underline"
-            >
-              Clear search
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* Popular Topics */}
-            <div className="mb-8">
-              <h2 className="text-lg font-bold mb-4">Popular Topics</h2>
-              <div className="grid grid-cols-2 gap-3">
-                <button className="bg-gray-900 hover:bg-gray-800 p-3 rounded-lg flex items-center">
-                  <FiShoppingBag className="mr-2" />
-                  <span>Order Issues</span>
-                </button>
-                <button className="bg-gray-900 hover:bg-gray-800 p-3 rounded-lg flex items-center">
-                  <FiMessageSquare className="mr-2" />
-                  <span>Posting Help</span>
-                </button>
-                <button className="bg-gray-900 hover:bg-gray-800 p-3 rounded-lg flex items-center">
-                  <FiUsers className="mr-2" />
-                  <span>Account Security</span>
-                </button>
-                <button className="bg-gray-900 hover:bg-gray-800 p-3 rounded-lg flex items-center">
-                  <FiMail className="mr-2" />
-                  <span>Contact Support</span>
-                </button>
-              </div>
-            </div>
-
-            {/* FAQ Sections */}
-            <h2 className="text-lg font-bold mb-4">Help Articles</h2>
-            <div className="space-y-3">
-              {filteredCategories.map((category) => (
-                <div
-                  key={category.id}
-                  className="bg-gray-900 rounded-lg overflow-hidden"
-                >
-                  <button
-                    onClick={() => toggleCategory(category.id)}
-                    className="w-full p-4 flex justify-between items-center hover:bg-gray-800"
-                  >
-                    <div className="flex items-center">
-                      {category.icon}
-                      <span>{category.title}</span>
-                    </div>
-                    {activeCategory === category.id ? (
-                      <FiChevronDown className="text-gray-400" />
-                    ) : (
-                      <FiChevronRight className="text-gray-400" />
-                    )}
-                  </button>
-
-                  {activeCategory === category.id && (
-                    <div className="px-4 pb-4 space-y-4">
-                      {category.questions.map((item, index) => (
-                        <div
-                          key={index}
-                          className="pt-3 border-t border-gray-800 first:border-t-0"
-                        >
-                          <h3 className="font-medium">{item.question}</h3>
-                          <p className="text-gray-400 mt-1 text-sm">
-                            {item.answer}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-
       {/* Contact Support */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 p-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="font-medium">Need more help?</h3>
-            <p className="text-sm text-gray-400">We're available 24/7</p>
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 p-4 lg:static lg:border-t-0 lg:bg-transparent lg:p-0 lg:mt-8">
+        <div className="flex justify-between items-center lg:justify-center lg:gap-8">
+          <div className="lg:text-center">
+            <h3 className="font-medium lg:text-xl">Need more help?</h3>
+            <p className="text-sm text-gray-400 lg:text-lg">
+              We're available 24/7
+            </p>
           </div>
-          <div className="flex space-x-3">
-            <button className="p-2 bg-gray-800 rounded-full hover:bg-gray-700">
-              <FiMail />
+          <div className="flex space-x-3 lg:space-x-4">
+            <button className="p-2 bg-gray-800 rounded-full hover:bg-gray-700 lg:p-3">
+              <FiMail className="lg:w-5 lg:h-5" />
             </button>
-            <button className="p-2 bg-gray-800 rounded-full hover:bg-gray-700">
-              <FiPhone />
+            <button className="p-2 bg-gray-800 rounded-full hover:bg-gray-700 lg:p-3">
+              <FiPhone className="lg:w-5 lg:h-5" />
             </button>
-            <button className="p-2 bg-gray-800 rounded-full hover:bg-gray-700">
-              <FiMessageSquare />
+            <button className="p-2 bg-gray-800 rounded-full hover:bg-gray-700 lg:p-3">
+              <FiMessageSquare className="lg:w-5 lg:h-5" />
             </button>
           </div>
         </div>

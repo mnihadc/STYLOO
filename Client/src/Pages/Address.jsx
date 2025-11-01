@@ -146,8 +146,8 @@ const AddressPage = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl max-w-md w-full border border-gray-700 overflow-hidden shadow-2xl">
-            <div className="p-6">
+          <div className="bg-gray-800 rounded-xl max-w-md w-full sm:max-w-lg border border-gray-700 overflow-hidden shadow-2xl">
+            <div className="p-6 sm:p-8">
               <div className="flex items-center justify-center mb-4">
                 <div className="bg-red-500/20 p-3 rounded-full">
                   <svg
@@ -167,10 +167,10 @@ const AddressPage = () => {
                 </div>
               </div>
 
-              <h3 className="text-xl font-bold text-center mb-2">
+              <h3 className="text-xl sm:text-2xl font-bold text-center mb-2">
                 Delete Address?
               </h3>
-              <p className="text-gray-400 text-center mb-6">
+              <p className="text-gray-400 text-center mb-6 sm:text-lg">
                 This will permanently remove the address from your account. You
                 won't be able to undo this action.
               </p>
@@ -178,14 +178,14 @@ const AddressPage = () => {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 px-4 py-3 rounded-lg border border-gray-600 hover:bg-gray-700 transition-colors font-medium"
+                  className="flex-1 px-4 py-3 rounded-lg border border-gray-600 hover:bg-gray-700 transition-colors font-medium text-sm sm:text-base"
                   disabled={isDeleting}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteAddress}
-                  className="flex-1 px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 transition-colors font-medium flex items-center justify-center"
+                  className="flex-1 px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 transition-colors font-medium flex items-center justify-center text-sm sm:text-base"
                   disabled={isDeleting}
                 >
                   {isDeleting ? (
@@ -222,23 +222,25 @@ const AddressPage = () => {
         </div>
       )}
 
-      <div className="max-w-md mx-auto">
+      <div className="max-w-md mx-auto lg:max-w-4xl xl:max-w-6xl">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">My Addresses</h1>
+        <div className="flex justify-between items-center mb-6 lg:mb-8">
+          <h1 className="text-2xl font-bold lg:text-3xl xl:text-4xl">
+            My Addresses
+          </h1>
           <Link to="/create-address">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors lg:px-6 lg:py-3 lg:text-base">
               + Create New
             </button>
           </Link>
         </div>
 
         {addresses.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12 lg:py-16">
             <div className="text-gray-400 mb-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-12 w-12 mx-auto"
+                className="h-12 w-12 mx-auto lg:h-16 lg:w-16"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -257,31 +259,35 @@ const AddressPage = () => {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-medium mb-2">No Addresses Saved</h3>
-            <p className="text-gray-400 mb-4">
+            <h3 className="text-lg font-medium mb-2 lg:text-xl lg:mb-4">
+              No Addresses Saved
+            </h3>
+            <p className="text-gray-400 mb-4 lg:text-lg lg:mb-6">
               You haven't added any addresses yet.
             </p>
             <Link to="/create-address">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors lg:px-8 lg:py-3 lg:text-lg">
                 Add New Address
               </button>
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0 xl:grid-cols-3">
             {addresses.map((address) => (
               <div
                 key={address._id}
-                className={`border rounded-lg p-4 transition-all ${
+                className={`border rounded-lg p-4 transition-all lg:p-6 ${
                   selectedAddress === address._id
                     ? "border-blue-500 bg-gray-900"
                     : "border-gray-700 bg-gray-800"
                 }`}
               >
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium text-lg">{address.fullName}</h3>
-                    <p className="text-gray-300">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-lg lg:text-xl">
+                      {address.fullName}
+                    </h3>
+                    <p className="text-gray-300 mt-2 lg:text-base">
                       {address.addressLine1}
                       {address.addressLine2 && `, ${address.addressLine2}`}
                       <br />
@@ -289,19 +295,21 @@ const AddressPage = () => {
                       <br />
                       {address.country}
                     </p>
-                    <p className="text-gray-400 mt-2">{address.phoneNumber}</p>
+                    <p className="text-gray-400 mt-2 lg:text-base">
+                      {address.phoneNumber}
+                    </p>
                   </div>
                   {address.isDefault && (
-                    <span className="bg-green-900 text-green-300 text-xs px-2 py-1 rounded">
+                    <span className="bg-green-900 text-green-300 text-xs px-2 py-1 rounded ml-2 lg:text-sm">
                       Default
                     </span>
                   )}
                 </div>
 
-                <div className="flex justify-between mt-4">
+                <div className="flex justify-between mt-4 lg:mt-6">
                   <button
                     onClick={() => handleSelectAddress(address._id)}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors lg:px-5 lg:py-2.5 lg:text-base ${
                       selectedAddress === address._id
                         ? "bg-blue-600 text-white"
                         : "bg-gray-700 text-gray-300 hover:bg-gray-600"
@@ -310,10 +318,10 @@ const AddressPage = () => {
                     {selectedAddress === address._id ? "Selected" : "Select"}
                   </button>
 
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-3 lg:space-x-4">
                     <button
                       onClick={() => handleSetDefault(address._id)}
-                      className="text-gray-400 hover:text-white text-sm font-medium transition-colors"
+                      className="text-gray-400 hover:text-white text-sm font-medium transition-colors lg:text-base"
                       disabled={address.isDefault}
                     >
                       {address.isDefault ? "Default" : "Set as Default"}
@@ -321,10 +329,10 @@ const AddressPage = () => {
 
                     <button
                       onClick={() => confirmDelete(address._id)}
-                      className="text-red-500 hover:text-red-600 transition-colors"
+                      className="text-red-500 hover:text-red-600 transition-colors lg:scale-110"
                       title="Delete"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={18} className="lg:w-5 lg:h-5" />
                     </button>
                   </div>
                 </div>
@@ -334,9 +342,9 @@ const AddressPage = () => {
         )}
 
         {addresses.length > 0 && (
-          <div className="mt-8">
+          <div className="mt-8 lg:mt-12">
             <button
-              className={`w-full py-3 rounded-lg font-medium transition-colors ${
+              className={`w-full py-3 rounded-lg font-medium transition-colors lg:py-4 lg:text-lg ${
                 selectedAddress
                   ? "bg-blue-600 hover:bg-blue-700"
                   : "bg-gray-700 cursor-not-allowed"

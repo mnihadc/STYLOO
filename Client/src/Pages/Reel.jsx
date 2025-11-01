@@ -181,139 +181,145 @@ const ReelsPage = () => {
   return (
     <div className="relative bg-black h-screen w-full overflow-hidden">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-20 flex justify-between items-center p-3 bg-gradient-to-b from-black to-transparent">
-        <h1 className="text-xl font-bold ml-2">Reels</h1>
-        <button className="p-2">
-          <FiSearch className="text-white text-xl" />
+      <div className="fixed top-0 left-0 right-0 z-20 flex justify-between items-center p-3 bg-gradient-to-b from-black to-transparent lg:px-8 lg:py-4">
+        <h1 className="text-xl font-bold ml-2 lg:text-2xl">Reels</h1>
+        <button className="p-2 lg:p-3">
+          <FiSearch className="text-white text-xl lg:text-2xl" />
         </button>
       </div>
 
       {/* Reels Container */}
       <div
         ref={reelsContainerRef}
-        className="h-full pt-12 pb-20 overflow-y-scroll snap-y snap-mandatory"
+        className="h-full pt-12 pb-20 overflow-y-scroll snap-y snap-mandatory lg:pb-0"
         style={{ scrollSnapType: "y mandatory" }}
       >
-        {reels.map((reel, index) => (
-          <div
-            key={reel.id}
-            className="relative h-screen w-full snap-start"
-            onDoubleClick={() => handleDoubleTap(reel.id)}
-          >
-            {/* Video */}
-            <video
-              ref={(el) => (videoRefs.current[index] = el)}
-              src={reel.videoUrl}
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover bg-gray-900"
-              onClick={() => {
-                if (videoRefs.current[index].paused) {
-                  videoRefs.current[index].play();
-                } else {
-                  videoRefs.current[index].pause();
-                }
-              }}
-            />
+        <div className="lg:max-w-2xl lg:mx-auto lg:border-x lg:border-gray-800">
+          {reels.map((reel, index) => (
+            <div
+              key={reel.id}
+              className="relative h-screen w-full snap-start lg:flex lg:items-center lg:justify-center"
+              onDoubleClick={() => handleDoubleTap(reel.id)}
+            >
+              {/* Video */}
+              <video
+                ref={(el) => (videoRefs.current[index] = el)}
+                src={reel.videoUrl}
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover bg-gray-900 lg:max-w-lg lg:max-h-[80vh] lg:rounded-xl"
+                onClick={() => {
+                  if (videoRefs.current[index].paused) {
+                    videoRefs.current[index].play();
+                  } else {
+                    videoRefs.current[index].pause();
+                  }
+                }}
+              />
 
-            {/* Reel Info Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-              <div className="flex items-start">
-                {/* Left side - User info and caption */}
-                <div className="flex-1">
-                  <div className="flex items-center mb-2">
-                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white mr-2">
-                      <img
-                        src={reel.userImage}
-                        alt={reel.username}
-                        className="w-full h-full object-cover"
-                      />
+              {/* Reel Info Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent lg:p-6">
+                <div className="flex items-start">
+                  {/* Left side - User info and caption */}
+                  <div className="flex-1 lg:flex-initial lg:max-w-md">
+                    <div className="flex items-center mb-2 lg:mb-3">
+                      <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white mr-2 lg:w-10 lg:h-10">
+                        <img
+                          src={reel.userImage}
+                          alt={reel.username}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="font-semibold text-sm lg:text-base">
+                        {reel.username}
+                      </span>
+                      <button className="ml-2 text-xs bg-gray-800 px-2 py-1 rounded lg:text-sm lg:px-3">
+                        Follow
+                      </button>
                     </div>
-                    <span className="font-semibold text-sm">
-                      {reel.username}
-                    </span>
-                    <button className="ml-2 text-xs bg-gray-800 px-2 py-1 rounded">
-                      Follow
+                    <p className="text-sm mb-2 line-clamp-2 lg:text-base lg:mb-3">
+                      {reel.caption}
+                    </p>
+                    <div className="flex items-center text-xs lg:text-sm">
+                      <FiMusic className="mr-1 lg:w-4 lg:h-4" />
+                      <span className="truncate max-w-[180px] lg:max-w-[250px]">
+                        {reel.music}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right side - Action buttons */}
+                  <div className="flex flex-col items-center space-y-5 ml-2 lg:space-y-6 lg:ml-6">
+                    {/* Like button */}
+                    <div className="flex flex-col items-center">
+                      <button
+                        onClick={() => handleLike(reel.id)}
+                        className="text-2xl p-1 lg:text-3xl"
+                      >
+                        {reel.isLiked ? (
+                          <FaHeart className="text-red-500" />
+                        ) : (
+                          <FiHeart />
+                        )}
+                      </button>
+                      <span className="text-xs mt-1 lg:text-sm">
+                        {reel.likes.toLocaleString()}
+                      </span>
+                    </div>
+
+                    {/* Comment button */}
+                    <div className="flex flex-col items-center">
+                      <button className="text-2xl p-1 lg:text-3xl">
+                        <FaRegComment />
+                      </button>
+                      <span className="text-xs mt-1 lg:text-sm">
+                        {reel.comments.toLocaleString()}
+                      </span>
+                    </div>
+
+                    {/* Share button */}
+                    <div className="flex flex-col items-center">
+                      <button className="text-2xl p-1 lg:text-3xl">
+                        <BsShareFill />
+                      </button>
+                      <span className="text-xs mt-1 lg:text-sm">Share</span>
+                    </div>
+
+                    {/* Save button */}
+                    <div className="flex flex-col items-center">
+                      <button
+                        onClick={() => handleSave(reel.id)}
+                        className="text-2xl p-1 lg:text-3xl"
+                      >
+                        {reel.isSaved ? (
+                          <FaBookmark className="text-yellow-400" />
+                        ) : (
+                          <FaRegBookmark />
+                        )}
+                      </button>
+                      <span className="text-xs mt-1 lg:text-sm">Save</span>
+                    </div>
+
+                    {/* More options */}
+                    <button className="text-xl p-1 lg:text-2xl">
+                      <BsThreeDots />
                     </button>
-                  </div>
-                  <p className="text-sm mb-2 line-clamp-2">{reel.caption}</p>
-                  <div className="flex items-center text-xs">
-                    <FiMusic className="mr-1" />
-                    <span className="truncate max-w-[180px]">{reel.music}</span>
-                  </div>
-                </div>
 
-                {/* Right side - Action buttons */}
-                <div className="flex flex-col items-center space-y-5 ml-2">
-                  {/* Like button */}
-                  <div className="flex flex-col items-center">
-                    <button
-                      onClick={() => handleLike(reel.id)}
-                      className="text-2xl p-1"
-                    >
-                      {reel.isLiked ? (
-                        <FaHeart className="text-red-500" />
-                      ) : (
-                        <FiHeart />
-                      )}
-                    </button>
-                    <span className="text-xs mt-1">
-                      {reel.likes.toLocaleString()}
-                    </span>
-                  </div>
-
-                  {/* Comment button */}
-                  <div className="flex flex-col items-center">
-                    <button className="text-2xl p-1">
-                      <FaRegComment />
-                    </button>
-                    <span className="text-xs mt-1">
-                      {reel.comments.toLocaleString()}
-                    </span>
-                  </div>
-
-                  {/* Share button */}
-                  <div className="flex flex-col items-center">
-                    <button className="text-2xl p-1">
-                      <BsShareFill />
-                    </button>
-                    <span className="text-xs mt-1">Share</span>
-                  </div>
-
-                  {/* Save button */}
-                  <div className="flex flex-col items-center">
-                    <button
-                      onClick={() => handleSave(reel.id)}
-                      className="text-2xl p-1"
-                    >
-                      {reel.isSaved ? (
-                        <FaBookmark className="text-yellow-400" />
-                      ) : (
-                        <FaRegBookmark />
-                      )}
-                    </button>
-                    <span className="text-xs mt-1">Save</span>
-                  </div>
-
-                  {/* More options */}
-                  <button className="text-xl p-1">
-                    <BsThreeDots />
-                  </button>
-
-                  {/* Music disc */}
-                  <div className="w-8 h-8 rounded-full border border-white flex items-center justify-center mt-2">
-                    <FiMusic className="text-white text-sm" />
+                    {/* Music disc */}
+                    <div className="w-8 h-8 rounded-full border border-white flex items-center justify-center mt-2 lg:w-10 lg:h-10">
+                      <FiMusic className="text-white text-sm lg:text-base" />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 flex justify-around items-center p-3 z-10">
+      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 flex justify-around items-center p-3 z-10 lg:hidden">
         <button className="text-xl p-2">
           <svg
             aria-label="Home"

@@ -48,18 +48,18 @@ const SquareStories = () => {
   ];
 
   return (
-    <div className="bg-black p-4 border-b border-gray-800">
-      <div className="flex space-x-4 overflow-x-auto pb-2 hide-scrollbar">
+    <div className="bg-black p-4 lg:p-6 border-b border-gray-800 max-w-md mx-auto lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl">
+      <div className="flex space-x-4 lg:space-x-6 xl:space-x-8 overflow-x-auto pb-2 hide-scrollbar">
         {stories.map((story) => (
           <div
             key={story.id}
-            className="flex flex-col items-center space-y-1 flex-shrink-0"
+            className="flex flex-col items-center space-y-1 lg:space-y-2 flex-shrink-0"
           >
             <div
               className={`relative rounded-lg flex items-center justify-center ${
                 story.hasNewStory
-                  ? "bg-gradient-to-tr from-yellow-400 to-pink-500 p-0.5"
-                  : "bg-gray-700 p-0.5"
+                  ? "bg-gradient-to-tr from-yellow-400 to-pink-500 p-0.5 lg:p-1"
+                  : "bg-gray-700 p-0.5 lg:p-1"
               }`}
               style={{
                 width: "clamp(60px, 15vw, 80px)",
@@ -73,10 +73,10 @@ const SquareStories = () => {
                   className="w-full h-full object-cover"
                 />
                 {story.isYourStory && (
-                  <div className="absolute bottom-1 right-1 bg-blue-500 rounded-full p-1">
+                  <div className="absolute bottom-1 right-1 lg:bottom-2 lg:right-2 bg-blue-500 rounded-full p-1 lg:p-1.5">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-3 w-3 text-white"
+                      className="h-3 w-3 lg:h-4 lg:w-4 text-white"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
@@ -91,7 +91,7 @@ const SquareStories = () => {
               </div>
             </div>
             <span
-              className="text-xs truncate text-center text-white"
+              className="text-xs lg:text-sm truncate text-center text-white"
               style={{ width: "clamp(60px, 15vw, 80px)" }}
             >
               {story.isYourStory ? "Your Story" : story.username}

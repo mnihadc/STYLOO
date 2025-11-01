@@ -226,8 +226,8 @@ const Header = () => {
               <FiMessageSquare size={20} />
             </Link>
 
-            {/* Desktop User Menu */}
-            <div className="relative menu-container">
+            {/* Desktop User Menu - Fixed: Added group class */}
+            <div className="relative menu-container group">
               <button className="text-white p-2 rounded-full hover:bg-gray-800 transition-colors">
                 <FiUser size={20} />
               </button>
