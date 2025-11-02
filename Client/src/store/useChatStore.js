@@ -5,7 +5,7 @@ import { useAuthStore } from "./useAuthStore";
 
 export const useChatStore = create((set, get) => ({
   messages: [],
-  users: [],
+  users: [], // Properly initialized
   selectedUser: null,
   isUsersLoading: false,
   isMessagesLoading: false,
@@ -14,29 +14,48 @@ export const useChatStore = create((set, get) => ({
     set({ isUsersLoading: true });
     try {
       const res = await axiosInstance.get("/message/users");
-      set({ users: res.data });
+      // Ensure we always set an array, even if response is malformed
+      const users = Array.isArray(res?.data) ? res.data : [];
+      set({ users });
     } catch (error) {
-      toast.error(error.response.data.message);
+      console.error("Error fetching users:", error);
+      toast.error(error.response?.data?.message || "Failed to load users");
+      // Set empty array on error to prevent undefined
+      set({ users: [] });
     } finally {
       set({ isUsersLoading: false });
     }
   },
 
   getMessages: async (userId) => {
+    if (!userId) {
+      console.error("No user ID provided for getMessages");
+      return;
+    }
+
     set({ isMessagesLoading: true });
     try {
       const res = await axiosInstance.get(`/message/${userId}`);
-      set({ messages: res.data });
+      const messages = Array.isArray(res?.data) ? res.data : [];
+      set({ messages });
     } catch (error) {
-      toast.error(error.response.data.message);
+      console.error("Error fetching messages:", error);
+      toast.error(error.response?.data?.message || "Failed to load messages");
+      set({ messages: [] });
     } finally {
       set({ isMessagesLoading: false });
     }
   },
+
   sendMessage: async (messageData) => {
     const { selectedUser, messages } = get();
 
-    if (!messageData?.text) {
+    if (!selectedUser) {
+      toast.error("No user selected");
+      return;
+    }
+
+    if (!messageData?.text?.trim()) {
       console.error("No text sent!");
       return;
     }
@@ -48,38 +67,60 @@ export const useChatStore = create((set, get) => ({
       );
       set({ messages: [...messages, res.data] });
     } catch (error) {
+      console.error("Error sending message:", error);
       toast.error(error.response?.data?.message || "Message send failed.");
     }
   },
 
   subscribeToMessages: () => {
-    const socket = useAuthStore.getState().socket;
-    socket.on("newMessage", (newMessage) => {
-      const selectedUser = get().selectedUser;
-
-      // Add to messages if it's from or to the selected chat user
-      if (
-        selectedUser &&
-        (newMessage.senderId === selectedUser._id ||
-          newMessage.receiverId === selectedUser._id)
-      ) {
-        get().addMessage(newMessage);
+    try {
+      const socket = useAuthStore.getState().socket;
+      if (!socket) {
+        console.warn("Socket not available for subscription");
+        return;
       }
 
-      // Update chat list preview and unread count
-      get().updateUserListWithNewMessage(newMessage);
-    });
+      socket.on("newMessage", (newMessage) => {
+        const { selectedUser, users } = get();
+
+        // Add to messages if it's from or to the selected chat user
+        if (
+          selectedUser &&
+          (newMessage.senderId === selectedUser._id ||
+            newMessage.receiverId === selectedUser._id)
+        ) {
+          get().addMessage(newMessage);
+        }
+
+        // Update chat list preview and unread count
+        get().updateUserListWithNewMessage(newMessage);
+      });
+
+      // Handle socket errors
+      socket.on("error", (error) => {
+        console.error("Socket error:", error);
+      });
+    } catch (error) {
+      console.error("Error subscribing to messages:", error);
+    }
   },
 
-  addMessage: (msg) =>
-    set((state) => ({
-      messages: [...state.messages, msg],
-    })),
+  addMessage: (msg) => {
+    if (!msg) return;
 
-  updateUserListWithNewMessage: (msg) =>
+    set((state) => ({
+      messages: [...(state.messages || []), msg],
+    }));
+  },
+
+  updateUserListWithNewMessage: (msg) => {
+    if (!msg) return;
+
     set((state) => {
-      const updatedUsers = state.users.map((user) => {
-        if (user._id === msg.senderId) {
+      const currentUsers = state.users || [];
+
+      const updatedUsers = currentUsers.map((user) => {
+        if (user?._id === msg.senderId) {
           return {
             ...user,
             lastMessage: msg.text,
@@ -90,7 +131,21 @@ export const useChatStore = create((set, get) => ({
       });
 
       return { users: updatedUsers };
-    }),
+    });
+  },
 
-  setSelectedUser: (selectedUser) => set({ selectedUser }),
+  setSelectedUser: (selectedUser) => {
+    set({ selectedUser });
+  },
+
+  // Utility function to clear store (optional)
+  clearStore: () => {
+    set({
+      messages: [],
+      users: [],
+      selectedUser: null,
+      isUsersLoading: false,
+      isMessagesLoading: false,
+    });
+  },
 }));
