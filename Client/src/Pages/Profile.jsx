@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FiMoreVertical, FiMessageCircle, FiUserPlus } from "react-icons/fi";
 import {
@@ -16,6 +16,9 @@ const Profile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const dropdownRef = useRef(null);
 
   const fetchProfile = async () => {
     try {
@@ -38,10 +41,38 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const formatNumber = (num) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
     if (num >= 1000) return (num / 1000).toFixed(1) + "K";
     return num?.toString() || "0";
+  };
+
+  const handleAddPost = () => {
+    setShowDropdown(false);
+    // Add your post creation logic here
+    console.log("Add Post clicked");
+    // You can navigate to post creation page or open a modal
+  };
+
+  const handleAddReel = () => {
+    setShowDropdown(false);
+    // Add your reel creation logic here
+    console.log("Add Reel clicked");
+    // You can navigate to reel creation page or open a modal
   };
 
   if (loading) {
@@ -74,9 +105,33 @@ const Profile = () => {
             {profileData.username}
           </span>
         </div>
-        <button className="text-xl lg:text-2xl">
-          <FiMoreVertical />
-        </button>
+
+        {/* 3-dot dropdown menu */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            className="text-xl lg:text-2xl"
+            onClick={() => setShowDropdown(!showDropdown)}
+          >
+            <FiMoreVertical />
+          </button>
+
+          {showDropdown && (
+            <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-md shadow-lg z-20">
+              <button
+                onClick={handleAddPost}
+                className="w-full px-4 py-3 text-left text-sm hover:bg-gray-800 border-b border-gray-700 flex items-center"
+              >
+                <span>Add Post</span>
+              </button>
+              <button
+                onClick={handleAddReel}
+                className="w-full px-4 py-3 text-left text-sm hover:bg-gray-800 flex items-center"
+              >
+                <span>Add Reel</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Profile Info */}
