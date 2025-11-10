@@ -176,26 +176,27 @@ export const createPost = async (req, res) => {
 };
 
 // Other controller functions (getUserPosts, getPostById, likePost, etc.) remain the same...
+// Simple version - get all posts
+// Get all posts for feed
+// Get all posts from all users (latest first)
 export const getUserPosts = async (req, res) => {
   try {
-    const { userId } = req.params;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
+    // Get all posts from all users (no filtering by following)
     const posts = await Post.find({
-      user: userId,
       isHidden: false,
       isArchived: false,
     })
       .populate("user", "username avatar isVerified")
       .populate("taggedUsers", "username avatar")
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 }) // Latest posts first
       .skip(skip)
       .limit(limit);
 
     const totalPosts = await Post.countDocuments({
-      user: userId,
       isHidden: false,
       isArchived: false,
     });
@@ -212,53 +213,9 @@ export const getUserPosts = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get user posts error:", error);
     res.status(500).json({
       success: false,
-      message: "Error fetching user posts",
-      error: error.message,
-    });
-  }
-};
-
-export const getPostById = async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.postId)
-      .populate(
-        "user",
-        "username avatar isVerified followerCount followingCount"
-      )
-      .populate("taggedUsers", "username avatar")
-      .populate("likes", "username avatar")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "user",
-          select: "username avatar",
-        },
-        options: { sort: { createdAt: -1 }, limit: 10 },
-      });
-
-    if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: "Post not found",
-      });
-    }
-
-    // Increment view count
-    post.views += 1;
-    await post.save();
-
-    res.json({
-      success: true,
-      post,
-    });
-  } catch (error) {
-    console.error("Get post by ID error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error fetching post",
+      message: "Error fetching posts",
       error: error.message,
     });
   }
