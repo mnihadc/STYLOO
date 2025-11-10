@@ -42,8 +42,8 @@ const postSchema = new mongoose.Schema(
     },
     taggedUsers: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        type: String,
+        default: "",
       },
     ],
     likes: [

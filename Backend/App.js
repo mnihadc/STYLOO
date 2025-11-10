@@ -11,6 +11,7 @@ import addressRoutes from "./Route/address.route.js";
 import orderRoutes from "./Route/order.route.js";
 import wishlistRoutes from "./Route/wishlist.route.js";
 import messageRoutes from "./Route/message.route.js";
+import postRoutes from "./Route/post.route.js";
 import { app, server } from "./Utils/socket.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -40,6 +41,7 @@ app.use("/api/address", addressRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/message", messageRoutes);
+app.use("/api/posts", postRoutes);
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI, {

@@ -88,10 +88,10 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // Use consistent property names (userId instead of id)
+    // Generate token
     const token = jwt.sign(
       {
-        userId: user._id, // Changed from id to userId
+        userId: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -100,18 +100,21 @@ export const loginUser = async (req, res) => {
       { expiresIn: "24h" }
     );
 
-    // Exclude password
+    // Exclude password from user data
     const { password: pwd, ...userData } = user._doc;
+    
+    // Set cookie (optional - for httpOnly cookies)
     res.cookie("authToken", token, {
       httpOnly: true,
-      secure: false, // true in production
+      secure: process.env.NODE_ENV === "production", // true in production
       sameSite: "Lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     return res.status(200).json({
       success: true,
-      token,
+      message: "Login successful",
+      token: token, // Send token in response body for frontend storage
       user: userData,
     });
   } catch (error) {

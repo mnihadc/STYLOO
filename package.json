@@ -30,6 +30,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.14.1",
+    "multer": "^2.0.2",
     "path-to-regexp": "^8.2.0",
     "react-redux": "^9.2.0",
     "react-toastify": "^11.0.5",

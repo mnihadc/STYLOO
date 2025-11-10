@@ -117,18 +117,22 @@ const Profile = () => {
 
           {showDropdown && (
             <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-md shadow-lg z-20">
-              <button
-                onClick={handleAddPost}
-                className="w-full px-4 py-3 text-left text-sm hover:bg-gray-800 border-b border-gray-700 flex items-center"
-              >
-                <span>Add Post</span>
-              </button>
-              <button
-                onClick={handleAddReel}
-                className="w-full px-4 py-3 text-left text-sm hover:bg-gray-800 flex items-center"
-              >
-                <span>Add Reel</span>
-              </button>
+              <Link to="/add-post">
+                <button
+                  onClick={handleAddPost}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-800 border-b border-gray-700 flex items-center"
+                >
+                  <span>Add Post</span>
+                </button>
+              </Link>
+              <Link to="/">
+                <button
+                  onClick={handleAddReel}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-800 flex items-center"
+                >
+                  <span>Add Reel</span>
+                </button>
+              </Link>
             </div>
           )}
         </div>

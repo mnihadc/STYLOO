@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 
 const UserVerifyToken = (req, res, next) => {
-  const token = req.cookies.authToken;
+  const token =
+    req.cookies?.authToken || req.headers.authorization?.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({ message: "Authentication token missing" });
@@ -10,9 +11,10 @@ const UserVerifyToken = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ Ensure this contains both userId and role
     req.user = {
       userId: decoded.userId,
+      username: decoded.username,
+      email: decoded.email,
       role: decoded.role,
     };
 

@@ -11,6 +11,7 @@ import WishlistPage from "./Pages/WishList";
 import ChatPage from "./Pages/ChatPage";
 import Profile from "./Pages/Profile";
 import CartPage from "./Pages/Cart";
+import AddPost from "./Pages/AddPost";
 import OrderPage from "./Pages/Order";
 import HelpCenter from "./Pages/HelpCenter";
 import SettingsPage from "./Pages/Settings";
@@ -90,6 +91,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
 
           <Route element={<UserRoute />}>
+            <Route path="/add-post" element={<AddPost />} />
             <Route path="/post" element={<Post />} />
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/chatpage" element={<ChatPage />} />

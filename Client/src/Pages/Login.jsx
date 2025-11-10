@@ -24,12 +24,24 @@ const LoginPage = () => {
 
     try {
       const response = await axios.post("/api/auth/login", formData);
-      const { success, user } = response.data;
+      const { success, user, token, message } = response.data; // ✅ Add token here
 
-      if (success && user) {
-        dispatch(signInSuccess(user));
+      console.log("Login response:", response.data); // Debug log
+
+      if (success && user && token) {
+        // ✅ Pass both user AND token to Redux
+        dispatch(
+          signInSuccess({
+            user: user,
+            token: token,
+          })
+        );
+
+        // ✅ Also store token in localStorage as backup
+        localStorage.setItem("token", token);
+
         toast.success("Login successful!");
-        // Use a slightly longer delay or useEffect if needed
+
         setTimeout(() => {
           navigate("/");
         }, 1500);

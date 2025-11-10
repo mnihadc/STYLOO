@@ -6,46 +6,64 @@ import {
   FiMapPin,
   FiUser,
   FiSmile,
+  FiLink,
+  FiUpload,
 } from "react-icons/fi";
+import axios from "axios";
 import { BsThreeDots } from "react-icons/bs";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 
 function AddPost() {
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(null);
   const [caption, setCaption] = useState("");
   const [location, setLocation] = useState("");
   const [taggedUsers, setTaggedUsers] = useState([]);
   const [showTagInput, setShowTagInput] = useState(false);
   const [tagInput, setTagInput] = useState("");
-  const [activeTab, setActiveTab] = useState("post"); // 'post' or 'reel'
+  const [activeTab, setActiveTab] = useState("post");
+  const [uploadMethod, setUploadMethod] = useState("file");
+  const [mediaLinks, setMediaLinks] = useState([{ url: "", type: "image" }]);
   const fileInputRef = useRef(null);
+  const [useDirectLinks, setUseDirectLinks] = useState(true);
+  const { currentUser, token } = useSelector((state) => state.user);
 
+  // Handle file upload method
   const handleImageSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
+      setUploadMethod("file");
     }
   };
 
-  const handleDragOver = (event) => {
-    event.preventDefault();
+  // Handle direct link method
+  const handleLinkAdd = () => {
+    setMediaLinks([...mediaLinks, { url: "", type: "image" }]);
   };
 
-  const handleDrop = (event) => {
-    event.preventDefault();
-    const file = event.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) {
-      const imageUrl = URL.createObjectURL(file);
-      setSelectedImage(imageUrl);
+  const handleLinkRemove = (index) => {
+    const newLinks = mediaLinks.filter((_, i) => i !== index);
+    setMediaLinks(newLinks);
+    if (newLinks.length > 0 && newLinks[0].url) {
+      setSelectedImage(newLinks[0].url);
+    } else {
+      setSelectedImage(null);
     }
   };
 
-  const removeImage = () => {
-    setSelectedImage(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+  const handleLinkChange = (index, field, value) => {
+    const newLinks = [...mediaLinks];
+    newLinks[index][field] = value;
+    setMediaLinks(newLinks);
+
+    // Update preview with first valid URL
+    const firstValidLink = newLinks.find((link) => link.url);
+    setSelectedImage(firstValidLink ? firstValidLink.url : null);
   };
 
   const addTaggedUser = () => {
@@ -53,27 +71,122 @@ function AddPost() {
       setTaggedUsers([...taggedUsers, tagInput.trim()]);
       setTagInput("");
       setShowTagInput(false);
+      toast.success(`@${tagInput.trim()} tagged successfully!`);
     }
   };
 
   const removeTaggedUser = (userToRemove) => {
     setTaggedUsers(taggedUsers.filter((user) => user !== userToRemove));
+    toast.success(`@${userToRemove} removed from tags`);
   };
 
-  const handleSubmit = () => {
-    // Handle post submission logic here
-    console.log({
-      image: selectedImage,
-      caption,
-      location,
-      taggedUsers,
-      type: activeTab,
-    });
-    // You would typically upload to your backend here
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (uploadMethod === "file" && !selectedImage) {
+      toast.error("Please select an image to post");
+      return;
+    }
+
+    if (uploadMethod === "link" && !mediaLinks.some((link) => link.url)) {
+      toast.error("Please add at least one media URL");
+      return;
+    }
+
+    // Validate URLs if using links
+    if (uploadMethod === "link") {
+      const invalidLinks = mediaLinks.filter(
+        (link) => link.url && !isValidUrl(link.url)
+      );
+      if (invalidLinks.length > 0) {
+        toast.error("Please fix invalid URLs before posting");
+        return;
+      }
+    }
+
+    try {
+      const loadingToast = toast.loading("Creating your post...");
+
+      const formData = new FormData();
+      formData.append("caption", caption);
+      formData.append("postType", "post");
+      formData.append("useDirectLinks", useDirectLinks);
+
+      if (useDirectLinks) {
+        formData.append("media", JSON.stringify(mediaLinks));
+      } else {
+        // handle file uploads later
+      }
+
+      const res = await axios.post("/api/posts/create-posting", formData, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      toast.dismiss(loadingToast);
+      toast.success("Post created successfully! 🎉");
+
+      // Navigate after a short delay to show the success message
+      setTimeout(() => {
+        navigate("/post");
+      }, 1500);
+    } catch (err) {
+      console.error("Error creating post:", err.response?.data || err.message);
+
+      const errorMessage =
+        err.response?.data?.message || "Failed to create post!";
+      toast.error(errorMessage);
+    }
+  };
+
+  // Helper function to validate URLs in frontend
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (err) {
+      return false;
+    }
   };
 
   return (
     <div className="bg-black text-white min-h-screen max-w-md mx-auto lg:max-w-2xl xl:max-w-3xl 2xl:max-w-4xl">
+      {/* React Hot Toast Container */}
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: "#1f2937",
+            color: "white",
+            border: "1px solid #374151",
+          },
+          success: {
+            style: {
+              background: "#065f46",
+              color: "white",
+              border: "1px solid #047857",
+            },
+          },
+          error: {
+            style: {
+              background: "#7f1d1d",
+              color: "white",
+              border: "1px solid #dc2626",
+            },
+          },
+          loading: {
+            style: {
+              background: "#1f2937",
+              color: "white",
+            },
+          },
+        }}
+      />
+
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black bg-opacity-90 p-3 lg:p-4 border-b border-gray-800 flex items-center justify-between">
         <Link to="/profile">
@@ -118,44 +231,145 @@ function AddPost() {
         </button>
       </div>
 
+      {/* Upload Method Tabs */}
+      <div className="flex border-b border-gray-800">
+        <button
+          onClick={() => setUploadMethod("file")}
+          className={`flex-1 py-3 text-center font-medium text-sm ${
+            uploadMethod === "file" ? "text-blue-400" : "text-gray-400"
+          }`}
+        >
+          <FiUpload className="inline mr-2" />
+          Upload File
+        </button>
+        <button
+          onClick={() => setUploadMethod("link")}
+          className={`flex-1 py-3 text-center font-medium text-sm ${
+            uploadMethod === "link" ? "text-blue-400" : "text-gray-400"
+          }`}
+        >
+          <FiLink className="inline mr-2" />
+          Use Link
+        </button>
+      </div>
+
       <div className="flex flex-col lg:flex-row">
-        {/* Left Side - Image Upload */}
+        {/* Left Side - Media Input */}
         <div className="lg:w-1/2 p-4 lg:p-6">
-          {!selectedImage ? (
-            <div
-              className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors"
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-            >
-              <FiImage className="text-4xl lg:text-5xl text-gray-400 mx-auto mb-4" />
-              <p className="text-lg lg:text-xl font-semibold mb-2">
-                Drag photos and videos here
-              </p>
-              <button className="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold text-sm lg:text-base">
-                Select from computer
-              </button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageSelect}
-                accept="image/*,video/*"
-                className="hidden"
-              />
-            </div>
-          ) : (
-            <div className="relative">
-              <img
-                src={selectedImage}
-                alt="Selected for post"
-                className="w-full h-auto rounded-lg max-h-[500px] object-contain"
-              />
-              <button
-                onClick={removeImage}
-                className="absolute top-2 right-2 bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70"
+          {uploadMethod === "file" ? (
+            // File Upload Section
+            !selectedImage ? (
+              <div
+                className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
               >
-                <FiX className="text-white text-lg" />
-              </button>
+                <FiImage className="text-4xl lg:text-5xl text-gray-400 mx-auto mb-4" />
+                <p className="text-lg lg:text-xl font-semibold mb-2">
+                  Drag photos and videos here
+                </p>
+                <button className="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold text-sm lg:text-base">
+                  Select from computer
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageSelect}
+                  accept="image/*,video/*"
+                  className="hidden"
+                />
+              </div>
+            ) : (
+              <div className="relative">
+                <img
+                  src={selectedImage}
+                  alt="Selected for post"
+                  className="w-full h-auto rounded-lg max-h-[500px] object-contain"
+                />
+                <button
+                  onClick={() => {
+                    setSelectedImage(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = "";
+                    }
+                    toast.success("Media removed");
+                  }}
+                  className="absolute top-2 right-2 bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70"
+                >
+                  <FiX className="text-white text-lg" />
+                </button>
+              </div>
+            )
+          ) : (
+            // Direct Links Section
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="font-semibold">Add Media URLs</h3>
+                <button
+                  onClick={handleLinkAdd}
+                  className="bg-blue-500 text-white px-3 py-1 rounded text-sm"
+                >
+                  Add More
+                </button>
+              </div>
+
+              {mediaLinks.map((link, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex space-x-2">
+                    <select
+                      value={link.type}
+                      onChange={(e) =>
+                        handleLinkChange(index, "type", e.target.value)
+                      }
+                      className="bg-gray-800 rounded px-3 py-2 text-sm"
+                    >
+                      <option value="image">Image</option>
+                      <option value="video">Video</option>
+                    </select>
+                    <input
+                      type="url"
+                      value={link.url}
+                      onChange={(e) =>
+                        handleLinkChange(index, "url", e.target.value)
+                      }
+                      placeholder={`Paste ${link.type} URL here...`}
+                      className="flex-1 bg-gray-800 rounded px-3 py-2 text-sm placeholder-gray-400"
+                    />
+                    {mediaLinks.length > 1 && (
+                      <button
+                        onClick={() => handleLinkRemove(index)}
+                        className="bg-red-500 text-white px-3 py-2 rounded text-sm"
+                      >
+                        <FiX />
+                      </button>
+                    )}
+                  </div>
+                  {link.url && (
+                    <div className="text-xs text-gray-400">
+                      {isValidUrl(link.url) ? (
+                        <span className="text-green-400">✓ Valid URL</span>
+                      ) : (
+                        <span className="text-red-400">✗ Invalid URL</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Preview */}
+              {selectedImage && (
+                <div className="mt-4">
+                  <h4 className="font-medium mb-2">Preview:</h4>
+                  <img
+                    src={selectedImage}
+                    alt="Preview"
+                    className="w-full h-auto rounded-lg max-h-[300px] object-contain border border-gray-600"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      toast.error("Failed to load preview image");
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -309,17 +523,24 @@ function AddPost() {
       {/* Bottom Actions */}
       <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 p-4 max-w-md mx-auto lg:max-w-2xl xl:max-w-3xl 2xl:max-w-4xl">
         <div className="flex space-x-3">
-          <button className="flex-1 bg-gray-800 text-white py-3 rounded-lg font-semibold text-sm hover:bg-gray-700 transition-colors">
+          <button
+            onClick={() => toast.success("Draft saved successfully!")}
+            className="flex-1 bg-gray-800 text-white py-3 rounded-lg font-semibold text-sm hover:bg-gray-700 transition-colors"
+          >
             Save Draft
           </button>
           <button
             onClick={handleSubmit}
             className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-colors ${
-              selectedImage
+              (uploadMethod === "file" && selectedImage) ||
+              (uploadMethod === "link" && mediaLinks.some((link) => link.url))
                 ? "bg-blue-500 text-white hover:bg-blue-600"
                 : "bg-gray-600 text-gray-400 cursor-not-allowed"
             }`}
-            disabled={!selectedImage}
+            disabled={
+              (uploadMethod === "file" && !selectedImage) ||
+              (uploadMethod === "link" && !mediaLinks.some((link) => link.url))
+            }
           >
             Share {activeTab === "post" ? "Post" : "Reel"}
           </button>
