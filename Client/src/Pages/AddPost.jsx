@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   FiX,
   FiImage,
@@ -8,6 +8,7 @@ import {
   FiSmile,
   FiLink,
   FiUpload,
+  FiVideo,
 } from "react-icons/fi";
 import axios from "axios";
 import { BsThreeDots } from "react-icons/bs";
@@ -18,7 +19,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 function AddPost() {
   const navigate = useNavigate();
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedMedia, setSelectedMedia] = useState(null);
   const [caption, setCaption] = useState("");
   const [location, setLocation] = useState("");
   const [taggedUsers, setTaggedUsers] = useState([]);
@@ -27,32 +28,69 @@ function AddPost() {
   const [activeTab, setActiveTab] = useState("post");
   const [uploadMethod, setUploadMethod] = useState("file");
   const [mediaLinks, setMediaLinks] = useState([{ url: "", type: "image" }]);
+  const [music, setMusic] = useState({ trackId: "", title: "", artist: "" });
+  const [showMusicModal, setShowMusicModal] = useState(false);
   const fileInputRef = useRef(null);
-  const [useDirectLinks, setUseDirectLinks] = useState(true);
   const { currentUser, token } = useSelector((state) => state.user);
 
+  // Reset media when switching between post/reel
+  useEffect(() => {
+    if (activeTab === "reel") {
+      // Default to video type for reels
+      setMediaLinks([{ url: "", type: "video" }]);
+      setSelectedMedia(null);
+    } else {
+      setMediaLinks([{ url: "", type: "image" }]);
+      setSelectedMedia(null);
+    }
+  }, [activeTab]);
+
   // Handle file upload method
-  const handleImageSelect = (event) => {
+  const handleMediaSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setSelectedImage(imageUrl);
+      // Validate file type based on active tab
+      if (activeTab === "reel") {
+        if (!file.type.startsWith("video/")) {
+          toast.error("Please select a video file for reels");
+          return;
+        }
+        // Validate video duration (max 90 seconds for reels)
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.onloadedmetadata = function () {
+          window.URL.revokeObjectURL(video.src);
+          if (video.duration > 90) {
+            toast.error("Reels must be 90 seconds or shorter");
+            return;
+          }
+          const mediaUrl = URL.createObjectURL(file);
+          setSelectedMedia({ url: mediaUrl, type: "video", file });
+        };
+        video.src = URL.createObjectURL(file);
+      } else {
+        // For posts, accept both images and videos
+        const mediaType = file.type.startsWith("video/") ? "video" : "image";
+        const mediaUrl = URL.createObjectURL(file);
+        setSelectedMedia({ url: mediaUrl, type: mediaType, file });
+      }
       setUploadMethod("file");
     }
   };
 
   // Handle direct link method
   const handleLinkAdd = () => {
-    setMediaLinks([...mediaLinks, { url: "", type: "image" }]);
+    const defaultType = activeTab === "reel" ? "video" : "image";
+    setMediaLinks([...mediaLinks, { url: "", type: defaultType }]);
   };
 
   const handleLinkRemove = (index) => {
     const newLinks = mediaLinks.filter((_, i) => i !== index);
     setMediaLinks(newLinks);
     if (newLinks.length > 0 && newLinks[0].url) {
-      setSelectedImage(newLinks[0].url);
+      setSelectedMedia({ url: newLinks[0].url, type: newLinks[0].type });
     } else {
-      setSelectedImage(null);
+      setSelectedMedia(null);
     }
   };
 
@@ -63,7 +101,18 @@ function AddPost() {
 
     // Update preview with first valid URL
     const firstValidLink = newLinks.find((link) => link.url);
-    setSelectedImage(firstValidLink ? firstValidLink.url : null);
+    if (firstValidLink) {
+      setSelectedMedia({ url: firstValidLink.url, type: firstValidLink.type });
+    } else {
+      setSelectedMedia(null);
+    }
+  };
+
+  // Mock music selection (you'll integrate with your music API)
+  const handleMusicSelect = (track) => {
+    setMusic(track);
+    setShowMusicModal(false);
+    toast.success(`"${track.title}" by ${track.artist} selected`);
   };
 
   const addTaggedUser = () => {
@@ -84,8 +133,10 @@ function AddPost() {
     e.preventDefault();
 
     // Validation
-    if (uploadMethod === "file" && !selectedImage) {
-      toast.error("Please select an image to post");
+    if (uploadMethod === "file" && !selectedMedia) {
+      toast.error(
+        `Please select ${activeTab === "reel" ? "a video" : "media"} to post`
+      );
       return;
     }
 
@@ -103,31 +154,58 @@ function AddPost() {
         toast.error("Please fix invalid URLs before posting");
         return;
       }
+
+      // For reels, ensure at least one video URL
+      if (
+        activeTab === "reel" &&
+        !mediaLinks.some((link) => link.type === "video")
+      ) {
+        toast.error("Reels must contain at least one video");
+        return;
+      }
     }
 
     try {
-      const loadingToast = toast.loading("Creating your post...");
+      const loadingToast = toast.loading(`Creating your ${activeTab}...`);
 
       const formData = new FormData();
       formData.append("caption", caption);
-      formData.append("postType", "post");
-      formData.append("useDirectLinks", useDirectLinks);
+      formData.append("postType", activeTab); // "post" or "reel"
+      formData.append("useDirectLinks", uploadMethod === "link");
 
-      if (useDirectLinks) {
+      if (location) {
+        formData.append("location", JSON.stringify({ name: location }));
+      }
+
+      if (taggedUsers.length > 0) {
+        formData.append("taggedUsers", JSON.stringify(taggedUsers));
+      }
+
+      if (music.trackId) {
+        formData.append("music", JSON.stringify(music));
+      }
+
+      if (uploadMethod === "link") {
         formData.append("media", JSON.stringify(mediaLinks));
       } else {
-        // handle file uploads later
+        // Handle file upload
+        if (selectedMedia.file) {
+          formData.append("media", selectedMedia.file);
+        }
       }
 
       const res = await axios.post("/api/posts/create-posting", formData, {
         withCredentials: true,
         headers: {
+          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
 
       toast.dismiss(loadingToast);
-      toast.success("Post created successfully! 🎉");
+      toast.success(
+        `${activeTab === "post" ? "Post" : "Reel"} created successfully! 🎉`
+      );
 
       // Navigate after a short delay to show the success message
       setTimeout(() => {
@@ -152,9 +230,26 @@ function AddPost() {
     }
   };
 
+  // Mock music data
+  const mockMusicTracks = [
+    { trackId: "1", title: "Summer Vibes", artist: "DJ Ocean", coverUrl: "" },
+    {
+      trackId: "2",
+      title: "Urban Dreams",
+      artist: "Metro Beats",
+      coverUrl: "",
+    },
+    {
+      trackId: "3",
+      title: "Sunset Boulevard",
+      artist: "Coastal Waves",
+      coverUrl: "",
+    },
+    { trackId: "4", title: "Night Drive", artist: "Synth City", coverUrl: "" },
+  ];
+
   return (
     <div className="bg-black text-white min-h-screen max-w-md mx-auto lg:max-w-2xl xl:max-w-3xl 2xl:max-w-4xl">
-      {/* React Hot Toast Container */}
       <Toaster
         position="top-center"
         toastOptions={{
@@ -258,14 +353,25 @@ function AddPost() {
         <div className="lg:w-1/2 p-4 lg:p-6">
           {uploadMethod === "file" ? (
             // File Upload Section
-            !selectedImage ? (
+            !selectedMedia ? (
               <div
                 className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <FiImage className="text-4xl lg:text-5xl text-gray-400 mx-auto mb-4" />
+                {activeTab === "reel" ? (
+                  <FiVideo className="text-4xl lg:text-5xl text-gray-400 mx-auto mb-4" />
+                ) : (
+                  <FiImage className="text-4xl lg:text-5xl text-gray-400 mx-auto mb-4" />
+                )}
                 <p className="text-lg lg:text-xl font-semibold mb-2">
-                  Drag photos and videos here
+                  {activeTab === "reel"
+                    ? "Drag videos here"
+                    : "Drag photos and videos here"}
+                </p>
+                <p className="text-sm text-gray-400 mb-4">
+                  {activeTab === "reel"
+                    ? "MP4, MOV • 90 seconds max"
+                    : "JPEG, PNG, MP4, MOV"}
                 </p>
                 <button className="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold text-sm lg:text-base">
                   Select from computer
@@ -273,21 +379,31 @@ function AddPost() {
                 <input
                   type="file"
                   ref={fileInputRef}
-                  onChange={handleImageSelect}
-                  accept="image/*,video/*"
+                  onChange={handleMediaSelect}
+                  accept={activeTab === "reel" ? "video/*" : "image/*,video/*"}
                   className="hidden"
                 />
               </div>
             ) : (
               <div className="relative">
-                <img
-                  src={selectedImage}
-                  alt="Selected for post"
-                  className="w-full h-auto rounded-lg max-h-[500px] object-contain"
-                />
+                {selectedMedia.type === "video" ? (
+                  <video
+                    src={selectedMedia.url}
+                    controls
+                    className="w-full h-auto rounded-lg max-h-[500px] object-contain"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <img
+                    src={selectedMedia.url}
+                    alt="Selected for post"
+                    className="w-full h-auto rounded-lg max-h-[500px] object-contain"
+                  />
+                )}
                 <button
                   onClick={() => {
-                    setSelectedImage(null);
+                    setSelectedMedia(null);
                     if (fileInputRef.current) {
                       fileInputRef.current.value = "";
                     }
@@ -356,18 +472,32 @@ function AddPost() {
               ))}
 
               {/* Preview */}
-              {selectedImage && (
+              {selectedMedia && (
                 <div className="mt-4">
                   <h4 className="font-medium mb-2">Preview:</h4>
-                  <img
-                    src={selectedImage}
-                    alt="Preview"
-                    className="w-full h-auto rounded-lg max-h-[300px] object-contain border border-gray-600"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                      toast.error("Failed to load preview image");
-                    }}
-                  />
+                  {selectedMedia.type === "video" ? (
+                    <video
+                      src={selectedMedia.url}
+                      controls
+                      className="w-full h-auto rounded-lg max-h-[300px] object-contain border border-gray-600"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        toast.error("Failed to load preview video");
+                      }}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <img
+                      src={selectedMedia.url}
+                      alt="Preview"
+                      className="w-full h-auto rounded-lg max-h-[300px] object-contain border border-gray-600"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        toast.error("Failed to load preview image");
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -391,7 +521,7 @@ function AddPost() {
             <textarea
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              placeholder="Write a caption..."
+              placeholder={`Write a caption for your ${activeTab}...`}
               className="w-full bg-transparent border-0 resize-none focus:ring-0 text-white placeholder-gray-400 text-base lg:text-lg min-h-[120px]"
               rows="4"
             />
@@ -441,6 +571,31 @@ function AddPost() {
               )}
             </div>
 
+            {/* Music for Reels */}
+            {activeTab === "reel" && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <FiMusic className="text-lg text-gray-400" />
+                  <span>Add Music</span>
+                </div>
+                {music.trackId ? (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-blue-400 text-sm truncate max-w-[120px]">
+                      {music.title}
+                    </span>
+                    <BsThreeDots className="text-gray-400" />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowMusicModal(true)}
+                    className="text-gray-400"
+                  >
+                    Add
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Tag Input Modal */}
             {showTagInput && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -468,6 +623,35 @@ function AddPost() {
                       Cancel
                     </button>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Music Selection Modal */}
+            {showMusicModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-gray-900 rounded-lg p-6 w-11/12 max-w-md max-h-[80vh] overflow-y-auto">
+                  <h3 className="text-lg font-semibold mb-4">Select Music</h3>
+                  <div className="space-y-2">
+                    {mockMusicTracks.map((track) => (
+                      <button
+                        key={track.trackId}
+                        onClick={() => handleMusicSelect(track)}
+                        className="w-full bg-gray-800 hover:bg-gray-700 rounded-lg p-3 text-left transition-colors"
+                      >
+                        <div className="font-medium">{track.title}</div>
+                        <div className="text-sm text-gray-400">
+                          {track.artist}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setShowMusicModal(false)}
+                    className="w-full mt-4 bg-gray-700 text-white py-2 rounded-lg font-semibold"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             )}
@@ -501,22 +685,6 @@ function AddPost() {
               <BsThreeDots className="text-gray-400" />
             </div>
           </div>
-
-          {/* Reel Specific Options */}
-          {activeTab === "reel" && (
-            <div className="mt-6 p-4 bg-gray-900 rounded-lg">
-              <h3 className="font-semibold mb-3 flex items-center">
-                <FiMusic className="mr-2" />
-                Add Music
-              </h3>
-              <p className="text-sm text-gray-400 mb-3">
-                Choose a sound for your reel
-              </p>
-              <button className="w-full bg-gray-800 hover:bg-gray-700 py-3 rounded-lg font-semibold text-sm transition-colors">
-                Browse Music
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -532,13 +700,13 @@ function AddPost() {
           <button
             onClick={handleSubmit}
             className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-colors ${
-              (uploadMethod === "file" && selectedImage) ||
+              (uploadMethod === "file" && selectedMedia) ||
               (uploadMethod === "link" && mediaLinks.some((link) => link.url))
                 ? "bg-blue-500 text-white hover:bg-blue-600"
                 : "bg-gray-600 text-gray-400 cursor-not-allowed"
             }`}
             disabled={
-              (uploadMethod === "file" && !selectedImage) ||
+              (uploadMethod === "file" && !selectedMedia) ||
               (uploadMethod === "link" && !mediaLinks.some((link) => link.url))
             }
           >

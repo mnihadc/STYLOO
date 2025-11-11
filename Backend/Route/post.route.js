@@ -1,5 +1,5 @@
 import express from "express";
-import { createPost, getUserPosts } from "../Controller/post.controller.js";
+import { createPost, getReels, getUserPosts } from "../Controller/post.controller.js";
 import UserVerifyToken from "../Middleware/UserVerifyToken.js";
 import multer from "multer";
 
@@ -18,7 +18,7 @@ router.post(
 );
 // ✅ GET all posts (feed) - ADD THIS ROUTE
 router.get("/", UserVerifyToken, getUserPosts);
-
+router.get("/reels", UserVerifyToken, getReels);
 // ✅ GET single post by ID
 
 export default router;

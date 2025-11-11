@@ -179,27 +179,32 @@ export const createPost = async (req, res) => {
 // Simple version - get all posts
 // Get all posts for feed
 // Get all posts from all users (latest first)
+// Get posts with reel support
 export const getUserPosts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const postType = req.query.type; // "post", "reel", or undefined for all
     const skip = (page - 1) * limit;
 
-    // Get all posts from all users (no filtering by following)
-    const posts = await Post.find({
+    // Build query
+    const query = {
       isHidden: false,
       isArchived: false,
-    })
+    };
+
+    // Filter by post type if specified
+    if (postType && ["post", "reel"].includes(postType)) {
+      query.postType = postType;
+    }
+
+    const posts = await Post.find(query)
       .populate("user", "username avatar isVerified")
-      .populate("taggedUsers", "username avatar")
-      .sort({ createdAt: -1 }) // Latest posts first
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const totalPosts = await Post.countDocuments({
-      isHidden: false,
-      isArchived: false,
-    });
+    const totalPosts = await Post.countDocuments(query);
 
     res.json({
       success: true,
@@ -216,6 +221,49 @@ export const getUserPosts = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching posts",
+      error: error.message,
+    });
+  }
+};
+
+// Get reels specifically
+export const getReels = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const reels = await Post.find({
+      postType: "reel",
+      isHidden: false,
+      isArchived: false,
+    })
+      .populate("user", "username avatar isVerified")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalReels = await Post.countDocuments({
+      postType: "reel",
+      isHidden: false,
+      isArchived: false,
+    });
+
+    res.json({
+      success: true,
+      reels,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalReels / limit),
+        totalReels,
+        hasNext: page < Math.ceil(totalReels / limit),
+        hasPrev: page > 1,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching reels",
       error: error.message,
     });
   }

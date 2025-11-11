@@ -14,16 +14,77 @@ import {
   FaBookmark,
 } from "react-icons/fa";
 import { BsEmojiSunglasses, BsThreeDots, BsShareFill } from "react-icons/bs";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import toast, { Toaster } from "react-hot-toast";
 
 const ReelsPage = () => {
-  // Sample reels data with real working video URLs from Mixkit
-  const [reels, setReels] = useState([
+  const [reels, setReels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const videoRefs = useRef([]);
+  const reelsContainerRef = useRef(null);
+  const [currentReelIndex, setCurrentReelIndex] = useState(0);
+  
+  const { token } = useSelector((state) => state.user);
+
+  // Fetch reels from backend API
+  const fetchReels = async (page = 1) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`/api/posts/reels?page=${page}&limit=10`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data.success) {
+        const reelsData = response.data.reels.map(reel => ({
+          id: reel._id,
+          username: reel.user?.username || "unknown_user",
+          userImage: reel.user?.avatar || "https://randomuser.me/api/portraits/women/44.jpg",
+          videoUrl: reel.media[0]?.url || "",
+          likes: reel.likeCount || 0,
+          comments: reel.commentCount || 0,
+          caption: reel.caption || "",
+          music: reel.music?.title || "Original Sound",
+          isLiked: reel.likes?.includes(reel.user?._id) || false, // You'll need to pass current user ID
+          isSaved: reel.saves?.includes(reel.user?._id) || false, // You'll need to pass current user ID
+          isPlaying: false,
+          postType: reel.postType,
+          aspectRatio: reel.aspectRatio || "9:16"
+        }));
+
+        if (page === 1) {
+          setReels(reelsData);
+        } else {
+          setReels(prev => [...prev, ...reelsData]);
+        }
+
+        setHasMore(response.data.pagination?.hasNext || false);
+        setCurrentPage(page);
+      }
+    } catch (error) {
+      console.error("Error fetching reels:", error);
+      toast.error("Failed to load reels");
+      
+      // Fallback to sample data if API fails
+      if (page === 1) {
+        setReels(getSampleReels());
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sample reels data as fallback
+  const getSampleReels = () => [
     {
       id: 1,
       username: "dance_queen",
       userImage: "https://randomuser.me/api/portraits/women/44.jpg",
-      videoUrl:
-        "https://assets.mixkit.co/videos/preview/mixkit-woman-dancing-under-neon-lights-1230-large.mp4",
+      videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-woman-dancing-under-neon-lights-1230-large.mp4",
       likes: 12456,
       comments: 423,
       caption: "Friday night vibes! 💃 #dance #party #weekend",
@@ -31,13 +92,14 @@ const ReelsPage = () => {
       isLiked: false,
       isSaved: false,
       isPlaying: false,
+      postType: "reel",
+      aspectRatio: "9:16"
     },
     {
       id: 2,
       username: "adventure_time",
       userImage: "https://randomuser.me/api/portraits/men/32.jpg",
-      videoUrl:
-        "https://assets.mixkit.co/videos/preview/mixkit-man-climbing-a-mountain-3466-large.mp4",
+      videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-man-climbing-a-mountain-3466-large.mp4",
       likes: 8921,
       comments: 312,
       caption: "Reached the summit! ⛰️ #adventure #hiking #nature",
@@ -45,13 +107,14 @@ const ReelsPage = () => {
       isLiked: true,
       isSaved: true,
       isPlaying: false,
+      postType: "reel",
+      aspectRatio: "9:16"
     },
     {
       id: 3,
       username: "coffee_lover",
       userImage: "https://randomuser.me/api/portraits/women/68.jpg",
-      videoUrl:
-        "https://assets.mixkit.co/videos/preview/mixkit-coffee-cup-on-a-table-1761-large.mp4",
+      videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-coffee-cup-on-a-table-1761-large.mp4",
       likes: 24567,
       comments: 856,
       caption: "Perfect morning starts with coffee ☕ #coffee #morning #relax",
@@ -59,59 +122,45 @@ const ReelsPage = () => {
       isLiked: false,
       isSaved: false,
       isPlaying: false,
-    },
-    {
-      id: 4,
-      username: "skateboard_pro",
-      userImage: "https://randomuser.me/api/portraits/men/75.jpg",
-      videoUrl:
-        "https://assets.mixkit.co/videos/preview/mixkit-man-doing-tricks-on-a-skateboard-3452-large.mp4",
-      likes: 18765,
-      comments: 932,
-      caption: "New trick unlocked! 🛹 #skate #skateboarding #extreme",
-      music: "Urban Skate Vibes",
-      isLiked: false,
-      isSaved: false,
-      isPlaying: false,
-    },
-    {
-      id: 5,
-      username: "pet_paradise",
-      userImage: "https://randomuser.me/api/portraits/women/90.jpg",
-      videoUrl:
-        "https://assets.mixkit.co/videos/preview/mixkit-cat-looking-curiously-to-the-camera-2242-large.mp4",
-      likes: 32109,
-      comments: 1245,
-      caption: "Meet my curious little buddy 🐱 #cat #pet #cute",
-      music: "Purring Sounds - Cat Lover",
-      isLiked: false,
-      isSaved: false,
-      isPlaying: false,
-    },
-    {
-      id: 6,
-      username: "beach_vibes",
-      userImage: "https://randomuser.me/api/portraits/women/33.jpg",
-      videoUrl:
-        "https://assets.mixkit.co/videos/preview/mixkit-waves-coming-to-the-beach-1866-large.mp4",
-      likes: 28743,
-      comments: 763,
-      caption: "Paradise found 🌴 #beach #vacation #summer",
-      music: "Ocean Waves - Relaxation Mix",
-      isLiked: false,
-      isSaved: false,
-      isPlaying: false,
-    },
-  ]);
+      postType: "reel",
+      aspectRatio: "9:16"
+    }
+  ];
 
-  const videoRefs = useRef([]);
-  const reelsContainerRef = useRef(null);
-  const [currentReelIndex, setCurrentReelIndex] = useState(0);
+  // Load reels on component mount
+  useEffect(() => {
+    fetchReels(1);
+  }, []);
 
-  // Handle like action with double tap
-  const handleLike = (id) => {
-    setReels(
-      reels.map((reel) => {
+  // Handle like action
+  const handleLike = async (id) => {
+    try {
+      const reel = reels.find(r => r.id === id);
+      const newLikedState = !reel.isLiked;
+      
+      // Optimistic update
+      setReels(prev => prev.map(reel => {
+        if (reel.id === id) {
+          return {
+            ...reel,
+            isLiked: newLikedState,
+            likes: newLikedState ? reel.likes + 1 : reel.likes - 1,
+          };
+        }
+        return reel;
+      }));
+
+      // API call to like/unlike
+      await axios.post(`/api/posts/${id}/like`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+    } catch (error) {
+      console.error("Error liking reel:", error);
+      // Revert optimistic update on error
+      setReels(prev => prev.map(reel => {
         if (reel.id === id) {
           return {
             ...reel,
@@ -120,14 +169,39 @@ const ReelsPage = () => {
           };
         }
         return reel;
-      })
-    );
+      }));
+      toast.error("Failed to like reel");
+    }
   };
 
   // Handle save action
-  const handleSave = (id) => {
-    setReels(
-      reels.map((reel) => {
+  const handleSave = async (id) => {
+    try {
+      const reel = reels.find(r => r.id === id);
+      const newSavedState = !reel.isSaved;
+      
+      // Optimistic update
+      setReels(prev => prev.map(reel => {
+        if (reel.id === id) {
+          return {
+            ...reel,
+            isSaved: newSavedState,
+          };
+        }
+        return reel;
+      }));
+
+      // API call to save/unsave
+      await axios.post(`/api/posts/${id}/save`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+    } catch (error) {
+      console.error("Error saving reel:", error);
+      // Revert optimistic update on error
+      setReels(prev => prev.map(reel => {
         if (reel.id === id) {
           return {
             ...reel,
@@ -135,13 +209,16 @@ const ReelsPage = () => {
           };
         }
         return reel;
-      })
-    );
+      }));
+      toast.error("Failed to save reel");
+    }
   };
 
-  // Handle scroll to pause/play videos
+  // Handle scroll for video play/pause and infinite scroll
   const handleScroll = () => {
     const windowHeight = window.innerHeight;
+    
+    // Handle video play/pause based on visibility
     videoRefs.current.forEach((videoRef, index) => {
       if (videoRef) {
         const rect = videoRef.getBoundingClientRect();
@@ -155,22 +232,37 @@ const ReelsPage = () => {
         }
       }
     });
+
+    // Infinite scroll - load more when near bottom
+    const container = reelsContainerRef.current;
+    if (container) {
+      const scrollTop = container.scrollTop;
+      const scrollHeight = container.scrollHeight;
+      const clientHeight = container.clientHeight;
+
+      if (scrollTop + clientHeight >= scrollHeight - 100 && hasMore && !loading) {
+        fetchReels(currentPage + 1);
+      }
+    }
   };
 
+  // Set up scroll listener
   useEffect(() => {
     const container = reelsContainerRef.current;
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, []);
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+      return () => container.removeEventListener("scroll", handleScroll);
+    }
+  }, [hasMore, loading, currentPage]);
 
   // Auto-play the first video on mount
   useEffect(() => {
-    if (videoRefs.current[0]) {
+    if (videoRefs.current[0] && reels.length > 0) {
       videoRefs.current[0]
         .play()
         .catch((e) => console.log("Autoplay prevented:", e));
     }
-  }, []);
+  }, [reels]);
 
   // Double tap to like
   const handleDoubleTap = (id) => {
@@ -178,8 +270,29 @@ const ReelsPage = () => {
     // You can add animation here for the heart popup
   };
 
+  if (loading && reels.length === 0) {
+    return (
+      <div className="relative bg-black h-screen w-full flex items-center justify-center">
+        <div className="text-white text-xl">Loading reels...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative bg-black h-screen w-full overflow-hidden">
+      {/* React Hot Toast Container */}
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#1f2937",
+            color: "white",
+            border: "1px solid #374151",
+          },
+        }}
+      />
+
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 z-20 flex justify-between items-center p-3 bg-gradient-to-b from-black to-transparent lg:px-8 lg:py-4">
         <h1 className="text-xl font-bold ml-2 lg:text-2xl">Reels</h1>
@@ -316,6 +429,13 @@ const ReelsPage = () => {
             </div>
           ))}
         </div>
+
+        {/* Loading indicator for infinite scroll */}
+        {loading && reels.length > 0 && (
+          <div className="flex justify-center py-4">
+            <div className="text-white">Loading more reels...</div>
+          </div>
+        )}
       </div>
 
       {/* Bottom Navigation */}
